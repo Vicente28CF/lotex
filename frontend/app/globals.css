@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-white text-ink antialiased; /* Changed bg-sand to bg-white for a cleaner look */
+  }
+
+  a {
+    @apply text-inherit no-underline;
+  }
+}

@@ -1,0 +1,42 @@
+from .base import *
+from decouple import config
+
+DEBUG = False
+
+ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="").split(",")
+
+# CORS solo acepta el dominio del frontend en producción
+CORS_ALLOWED_ORIGINS = config("CORS_ALLOWED_ORIGINS", default="").split(",")
+CORS_ALLOW_CREDENTIALS = True
+
+# ─── Seguridad HTTPS ──────────────────────────────────────────────────────────
+SECURE_SSL_REDIRECT = True
+SECURE_HSTS_SECONDS = 31536000          # 1 año
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_HTTPONLY = True
+X_FRAME_OPTIONS = "DENY"
+
+# ─── Logs estructurados en producción ────────────────────────────────────────
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "json": {
+            "format": '{"time": "%(asctime)s", "level": "%(levelname)s", "message": "%(message)s"}',
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "json",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
+    },
+}
