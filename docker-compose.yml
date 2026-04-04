@@ -1,0 +1,77 @@
+services:
+  # ─── Base de datos ───────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: lotex_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: lotex_db
+      POSTGRES_USER: lotex_user
+      POSTGRES_PASSWORD: lotex_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lotex_user -d lotex_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Caché / Rate limiting ────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: lotex_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Backend Django ───────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: lotex_backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+
+  # ─── Frontend Next.js ─────────────────────────────────────────
+  frontend:
+    profiles:
+      - frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: lotex_frontend
+    restart: unless-stopped
+    env_file:
+      - ./frontend/.env.local
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
