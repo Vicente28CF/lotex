@@ -42,23 +42,32 @@ export function GuardedPanel({
   loginHref,
   children,
 }: GuardedPanelProps) {
-  const { isAuthenticated, isReady } = useAuth();
+  const { isAuthenticated, isReady, isRestoring, sessionNotice } = useAuth();
 
-  if (!isReady) {
-    return <section className="rounded-3xl border border-line bg-white p-8 shadow-panel">Cargando...</section>;
+  if (!isReady || isRestoring) {
+    return (
+      <section className="rounded-[32px] border border-white/80 bg-white/88 p-8 shadow-panel">
+        <p className="text-sm text-stone">Restaurando sesion...</p>
+      </section>
+    );
   }
 
   if (!isAuthenticated) {
     return (
-      <section className="rounded-3xl border border-line bg-white p-8 shadow-panel">
-        <span className="inline-flex rounded-full bg-rose-50 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-coral">
-          Accion protegida
+        <section className="rounded-[32px] border border-white/80 bg-white/88 p-8 shadow-panel">
+          <span className="inline-flex rounded-full bg-rose-50 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-coral">
+          Acceso requerido
         </span>
-        <h2 className="mt-4 text-2xl font-semibold text-ink">{title}</h2>
+        <h2 className="mt-4 text-2xl font-semibold tracking-[-0.03em] text-ink">{title}</h2>
         <p className="mt-3 text-sm leading-7 text-stone">{description}</p>
+        {sessionNotice?.type === "error" ? (
+          <p className="mt-4 rounded-[18px] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+            {sessionNotice.message}
+          </p>
+        ) : null}
         <Link
           href={loginHref}
-          className="mt-6 inline-flex rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#e31c5f]"
+          className="mt-6 inline-flex rounded-full bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#e31c5f]"
         >
           {ctaLabel}
         </Link>
@@ -66,5 +75,9 @@ export function GuardedPanel({
     );
   }
 
-  return <section className="rounded-3xl border border-line bg-white p-8 shadow-panel">{children}</section>;
+  return (
+    <section className="rounded-[32px] border border-white/80 bg-white/88 p-8 shadow-panel">
+      {children}
+    </section>
+  );
 }

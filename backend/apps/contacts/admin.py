@@ -11,9 +11,10 @@ class ContactRequestAdmin(admin.ModelAdmin):
         "terreno",
         "buyer",
         "status",
+        "notification_status",
         "created_at",
     )
-    list_filter = ("status", "created_at")
+    list_filter = ("status", "notification_status", "created_at")
     search_fields = (
         "buyer_name",
         "buyer_email",
@@ -22,5 +23,11 @@ class ContactRequestAdmin(admin.ModelAdmin):
         "buyer__email",
         "buyer__full_name",
     )
-    readonly_fields = ("id", "created_at")
+    readonly_fields = (
+        "id",
+        "notification_status",
+        "notification_sent_at",
+        "notification_error",
+        "created_at",
+    )
     autocomplete_fields = ("terreno", "buyer")

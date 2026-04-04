@@ -1,6 +1,7 @@
 import uuid
 from django.db import models
 from django.conf import settings
+from django.utils.text import slugify
 
 
 class Terreno(models.Model):
@@ -16,6 +17,7 @@ class Terreno(models.Model):
                     on_delete=models.CASCADE,
                     related_name="terrenos"
                   )
+    slug        = models.SlugField(max_length=220, unique=True, editable=False)
     title       = models.CharField(max_length=200)
     description = models.TextField()
     price       = models.DecimalField(max_digits=14, decimal_places=2)
@@ -45,6 +47,17 @@ class Terreno(models.Model):
 
     def __str__(self):
         return f"{self.title} — {self.municipio} (${self.price})"
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.title)[:200] or str(self.id)
+            slug = base_slug
+            suffix = 1
+            while Terreno.objects.exclude(pk=self.pk).filter(slug=slug).exists():
+                slug = f"{base_slug[:195]}-{suffix}"
+                suffix += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
 
 
 class TerrenoImage(models.Model):

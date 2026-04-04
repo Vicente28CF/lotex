@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <rect width="1200" height="800" fill="#f5f0eb"/>
+  <rect x="0" y="480" width="1200" height="320" fill="#e8dfd4"/>
+  <!-- Sky gradient -->
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#dce8f5"/>
+      <stop offset="100%" stop-color="#f5f0eb"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="500" fill="url(#sky)"/>
+  <!-- Ground -->
+  <ellipse cx="600" cy="490" rx="580" ry="30" fill="#d4c9bc"/>
+  <!-- Terrain lines -->
+  <line x1="80" y1="640" x2="1120" y2="640" stroke="#c8bfb5" stroke-width="2"/>
+  <line x1="120" y1="700" x2="1080" y2="700" stroke="#c8bfb5" stroke-width="1.5"/>
+  <!-- Plot markers -->
+  <rect x="300" y="520" width="200" height="140" rx="4" fill="none" stroke="#b0a498" stroke-width="2" stroke-dasharray="8,4"/>
+  <rect x="520" y="510" width="180" height="150" rx="4" fill="none" stroke="#b0a498" stroke-width="2" stroke-dasharray="8,4"/>
+  <rect x="720" y="525" width="190" height="135" rx="4" fill="none" stroke="#b0a498" stroke-width="2" stroke-dasharray="8,4"/>
+  <!-- Sun -->
+  <circle cx="180" cy="140" r="60" fill="#ffd87a" opacity="0.55"/>
+  <!-- Logo text -->
+  <text x="600" y="370" font-family="sans-serif" font-size="44" font-weight="600" fill="#9e9188" text-anchor="middle">Terreno disponible</text>
+  <text x="600" y="420" font-family="sans-serif" font-size="22" fill="#b5aca3" text-anchor="middle">LoteX</text>
+</svg>

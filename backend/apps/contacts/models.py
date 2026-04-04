@@ -4,6 +4,10 @@ from django.conf import settings
 
 
 class ContactRequest(models.Model):
+    class NotificationStatus(models.TextChoices):
+        PENDING = "pending", "Pendiente"
+        SENT = "sent", "Enviada"
+        FAILED = "failed", "Fallida"
 
     class Status(models.TextChoices):
         PENDING = "pending", "Pendiente"
@@ -27,6 +31,13 @@ class ContactRequest(models.Model):
     buyer_phone = models.CharField(max_length=20, blank=True)
     message     = models.TextField(max_length=1000)
     status      = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
+    notification_status = models.CharField(
+        max_length=10,
+        choices=NotificationStatus.choices,
+        default=NotificationStatus.PENDING,
+    )
+    notification_sent_at = models.DateTimeField(null=True, blank=True)
+    notification_error = models.CharField(max_length=255, blank=True)
     created_at  = models.DateTimeField(auto_now_add=True)
 
     class Meta:

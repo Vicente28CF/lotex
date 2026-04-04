@@ -22,8 +22,7 @@ X_FRAME_OPTIONS = "DENY"
 
 # ─── Logs estructurados en producción ────────────────────────────────────────
 LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
+    **LOGGING,
     "formatters": {
         "json": {
             "format": '{"time": "%(asctime)s", "level": "%(levelname)s", "message": "%(message)s"}',
@@ -38,5 +37,28 @@ LOGGING = {
     "root": {
         "handlers": ["console"],
         "level": "INFO",
+    },
+    "loggers": {
+        **LOGGING["loggers"],
+        "apps.contacts": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "apps.terrenos": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "django.request": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+        "django.security": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
+        },
     },
 }

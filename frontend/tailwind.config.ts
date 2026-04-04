@@ -10,6 +10,12 @@ const config: Config = {
         coral: "#ff385c",
         stone: "#6a6a6a",
         line: "#e7e2db",
+        // Paleta del dashboard
+        "dash-bg": "#f0ede8",
+        "dash-accent": "#e8184a",
+        "dash-success": "#0f9172",
+        "dash-warning": "#f59e0b",
+        "dash-error": "#dc2626",
       },
       boxShadow: {
         panel: "0 12px 40px rgba(15, 23, 42, 0.08)",
@@ -18,7 +24,8 @@ const config: Config = {
         "4xl": "2rem",
       },
       fontFamily: {
-        sans: ["Circular", "Avenir Next", "Segoe UI", "sans-serif"],
+        sans: ["var(--font-dm-sans)", "DM Sans", "Segoe UI", "sans-serif"],
+        display: ["var(--font-sora)", "Sora", "Segoe UI", "sans-serif"],
       },
     },
   },

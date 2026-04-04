@@ -6,15 +6,13 @@ ALLOWED_HOSTS = ["*"]
 
 # En desarrollo mostramos las queries SQL en consola
 LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "handlers": {
-        "console": {"class": "logging.StreamHandler"},
-    },
+    **LOGGING,
     "loggers": {
+        **LOGGING["loggers"],
         "django.db.backends": {
             "handlers": ["console"],
             "level": "DEBUG",
+            "propagate": False,
         },
     },
 }
