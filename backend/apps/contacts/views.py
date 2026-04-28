@@ -210,10 +210,11 @@ class MessageViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins.Li
         serializer.is_valid(raise_exception=True)
         message = serializer.save()
 
-        # Marcar contacto como respondido si es el vendedor
         if message.sender_role == Message.SenderRole.SELLER:
             contact.status = ContactRequest.Status.REPLIED
-            contact.save(update_fields=["status"])
+        elif message.sender_role == Message.SenderRole.BUYER:
+            contact.status = ContactRequest.Status.PENDING
+        contact.save(update_fields=["status"])
 
         # Notificar al otro por email
         try:
