@@ -135,7 +135,7 @@ class ContactRequestViewSet(
             ContactRequest.objects.select_related("terreno", "buyer", "terreno__user")
             .prefetch_related("messages")
             .filter(Q(buyer=user) | Q(terreno__user=user))
-            .order_by("-updated_at")
+            .order_by("-created_at")
         )
 
         status_filter = request.query_params.get("status")
