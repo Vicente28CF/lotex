@@ -738,6 +738,26 @@ export async function fetchReceivedContacts(auth: AuthRequestOptions) {
   return fetchReceivedContactsWithFilters(auth);
 }
 
+export async function fetchMyConversations(auth: AuthRequestOptions): Promise<ContactRequest[]> {
+  const response = await requestAuthenticatedJson<ContactRequestApi[]>(
+    "/contact-requests/mine/",
+    auth,
+    { method: "GET" },
+    { fallbackMessage: "No se pudieron cargar las conversaciones." },
+  );
+  return response.map(mapContactRequest);
+}
+
+export async function fetchUnreadConversationsCount(auth: AuthRequestOptions): Promise<number> {
+  const response = await requestAuthenticatedJson<{ count: number }>(
+    "/contact-requests/unread-count/",
+    auth,
+    { method: "GET" },
+    { fallbackMessage: "No se pudo cargar el conteo." },
+  );
+  return response.count;
+}
+
 export async function fetchReceivedContactsWithFilters(
   auth: AuthRequestOptions,
   filters: ContactFilters = {},

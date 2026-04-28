@@ -5,17 +5,38 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { useAuth } from "@/components/auth-provider";
+import { fetchUnreadConversationsCount } from "@/lib/api";
 
 export function SiteHeader() {
-  const { isAuthenticated, isRefreshing, isRestoring, logout, session, sessionNotice } = useAuth();
+  const { isAuthenticated, isRefreshing, isRestoring, logout, session, sessionNotice, auth } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  // Polling de conteo de mensajes no leídos cada 10s
+  useEffect(() => {
+    if (!auth) {
+      setUnreadCount(0);
+      return;
+    }
+    async function poll() {
+      try {
+        const count = await fetchUnreadConversationsCount(auth);
+        setUnreadCount(count);
+      } catch {
+        // Ignorar errores silenciosamente
+      }
+    }
+    poll();
+    const interval = setInterval(poll, 10000);
+    return () => clearInterval(interval);
+  }, [auth]);
 
   useEffect(() => {
     function handleScroll() {
@@ -68,6 +89,19 @@ export function SiteHeader() {
               {isAuthenticated && (
                 <Link href="/favoritos" title="Ver terrenos guardados" className={`rounded-full px-4 py-2 transition hover:bg-sand hover:text-ink active:scale-95 ${pathname === "/favoritos" ? "bg-sand text-ink" : ""}`}>
                   Guardados
+                </Link>
+              )}
+              {isAuthenticated && (
+                <Link href="/mensajes" title="Mensajes" className={`relative flex items-center gap-1.5 rounded-full px-4 py-2 transition hover:bg-sand hover:text-ink active:scale-95 ${pathname === "/mensajes" || pathname.startsWith("/mensajes/") ? "bg-sand text-ink" : ""}`}>
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                  </svg>
+                  Mensajes
+                  {unreadCount > 0 && (
+                    <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-coral text-[10px] font-bold text-white shadow-sm">
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  )}
                 </Link>
               )}
               <Link href="/guia-legal" title="Guía antifraude" className="flex items-center gap-1.5 rounded-full px-4 py-2 font-bold text-coral/90 transition hover:bg-coral/5 hover:text-coral active:scale-95">
@@ -173,6 +207,23 @@ export function SiteHeader() {
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Guardados
+                  </Link>
+                )}
+                {isAuthenticated && (
+                  <Link
+                    href="/mensajes"
+                    className="flex items-center gap-2 rounded-2xl px-4 py-3 transition hover:bg-sand"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                    </svg>
+                    Mensajes
+                    {unreadCount > 0 && (
+                      <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-coral text-[10px] font-bold text-white">
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                      </span>
+                    )}
                   </Link>
                 )}
                 <Link
