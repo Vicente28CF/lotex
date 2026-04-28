@@ -1,1 +1,1 @@
-"""Settings package for the LoteX Django project."""
+"""Settings package for the Terrify Django project."""

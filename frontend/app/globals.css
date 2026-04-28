@@ -131,6 +131,28 @@
   }
 }
 
+@keyframes blob {
+  0% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
+.animate-blob {
+  animation: blob 7s infinite;
+}
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-down { animation: slideDown 0.2s ease forwards; }
+
 @media (prefers-reduced-motion: reduce) {
   .rise-in {
     animation: none;
@@ -144,5 +166,23 @@
 
   .flow-step-card::after {
     animation: none;
+  }
+  
+  .animate-blob {
+    animation: none;
+  }
+}
+
+/* Safe area para notch y home indicator en iOS */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Prevenir zoom en inputs en iOS — font-size mínimo 16px */
+@media screen and (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important;
   }
 }

@@ -48,3 +48,34 @@ class ContactRequest(models.Model):
 
     def __str__(self):
         return f"{self.buyer_name} interesado en {self.terreno.title}"
+
+
+class Message(models.Model):
+    class SenderRole(models.TextChoices):
+        BUYER  = "buyer",  "Comprador"
+        SELLER = "seller", "Vendedor"
+
+    id              = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    contact_request = models.ForeignKey(
+                        ContactRequest,
+                        on_delete=models.CASCADE,
+                        related_name="messages"
+                      )
+    sender          = models.ForeignKey(
+                        settings.AUTH_USER_MODEL,
+                        on_delete=models.SET_NULL,
+                        null=True,
+                        related_name="messages_sent"
+                      )
+    sender_role     = models.CharField(max_length=10, choices=SenderRole.choices)
+    body            = models.TextField(max_length=1000)
+    is_flagged      = models.BooleanField(default=False)
+    flag_reason     = models.CharField(max_length=255, blank=True)
+    created_at      = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "contact_messages"
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return f"Mensaje de {self.sender_role} en contacto {self.contact_request_id}"

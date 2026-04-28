@@ -46,8 +46,8 @@ jobs:
       DJANGO_SETTINGS_MODULE: config.settings.development
       SECRET_KEY: ci-secret-key-not-for-production
       DB_NAME: lotex_db
-      DB_USER: lotex_user
-      DB_PASSWORD: lotex_pass
+          DB_USER: lotex_user
+          DB_PASSWORD: lotex_pass
       DB_HOST: 127.0.0.1
       DB_PORT: 5432
       REDIS_URL: redis://127.0.0.1:6379/0
@@ -57,6 +57,7 @@ jobs:
       RESEND_API_KEY: ""
       DEFAULT_FROM_EMAIL: noreply@lotex.mx
       RESEND_TEST_TO_EMAIL: ""
+      GOOGLE_CLIENT_ID: test-google-client-id.apps.googleusercontent.com
 
     defaults:
       run:
@@ -94,6 +95,7 @@ jobs:
 
     env:
       NEXT_PUBLIC_API_URL: http://127.0.0.1:8000/api
+      NEXT_PUBLIC_GOOGLE_CLIENT_ID: test-google-client-id.apps.googleusercontent.com
       CI: true
 
     defaults:

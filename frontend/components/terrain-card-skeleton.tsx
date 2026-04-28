@@ -1,25 +1,15 @@
-// frontend/components/terrain-card-skeleton.tsx
 export function TerrainCardSkeleton() {
   return (
-    <article className="animate-pulse overflow-hidden rounded-[28px] border border-white/80 bg-white/88 shadow-panel">
-      <div className="relative aspect-[1.05/1] bg-[#ece5dd]"></div>
+    <article className="animate-pulse overflow-hidden rounded-2xl bg-white">
+      <div className="aspect-[4/3] rounded-2xl bg-stone/10" />
 
-      <div className="space-y-4 p-5">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <div className="mb-2 h-4 w-24 rounded-full bg-[#ece5dd]"></div>
-            <div className="h-6 w-48 rounded-full bg-[#e4d9cf]"></div>
-          </div>
-          <div className="h-6 w-16 rounded-full bg-[#ece5dd]"></div>
+      <div className="space-y-2 px-1 pt-3 pb-1">
+        <div className="flex justify-between gap-4">
+          <div className="h-4 w-32 rounded-full bg-stone/15" />
+          <div className="h-4 w-16 rounded-full bg-stone/10" />
         </div>
-
-        <div className="h-4 w-full rounded-full bg-[#ece5dd]"></div>
-        <div className="h-4 w-3/4 rounded-full bg-[#ece5dd]"></div>
-
-        <div className="flex items-center justify-between gap-4 border-t border-line/60 pt-4">
-          <div className="h-6 w-32 rounded-full bg-[#e4d9cf]"></div>
-          <div className="h-4 w-20 rounded-full bg-[#ece5dd]"></div>
-        </div>
+        <div className="h-3.5 w-24 rounded-full bg-stone/10" />
+        <div className="h-5 w-28 rounded-full bg-stone/15" />
       </div>
     </article>
   );

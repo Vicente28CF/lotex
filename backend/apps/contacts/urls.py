@@ -1,9 +1,13 @@
-from rest_framework.routers import DefaultRouter
+from rest_framework_nested import routers
 
-from .views import ContactRequestViewSet
+from .views import ContactRequestViewSet, MessageViewSet
 
 
-router = DefaultRouter()
-router.register("contact-requests", ContactRequestViewSet, basename="contact-requests")
+router = routers.DefaultRouter()
+router.register(r"contact-requests", ContactRequestViewSet, basename="contact-requests")
 
-urlpatterns = router.urls
+# Rutas anidadas: /contact-requests/{id}/messages/
+contacts_router = routers.NestedDefaultRouter(router, r"contact-requests", lookup="contact")
+contacts_router.register(r"messages", MessageViewSet, basename="contact-messages")
+
+urlpatterns = router.urls + contacts_router.urls

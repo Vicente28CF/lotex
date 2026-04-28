@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>🌱 LoteX</h1>
+  <h1>🌱 Terrify</h1>
   <p><strong>El marketplace de terrenos moderno y local</strong></p>
 
   <p>
@@ -13,7 +13,7 @@
 
 <br />
 
-**LoteX** es un marketplace de terrenos orientado a la experiencia del usuario y transacciones sin fricción. Pensado para iniciar operativamente en Zacoalco de Torres, Jalisco, con una arquitectura escalable para habilitar un mercado regional y posteriormente global.
+**Terrify** es un marketplace de terrenos orientado a la experiencia del usuario y transacciones sin fricción. Pensado para iniciar operativamente en Zacoalco de Torres, Jalisco, con una arquitectura escalable para habilitar un mercado regional y posteriormente global.
 
 Nuestra filosofía de producto es sencilla: **Exploración pública sin barreras.** El usuario solo necesita registrarse cuando va a ejecutar una acción que aporta valor (publicar un terreno o contactar a un vendedor).
 

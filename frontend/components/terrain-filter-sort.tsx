@@ -1,173 +1,206 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
-import type { Terreno } from "@/lib/types";
-
-type TerrainFilterSortProps = {
-  terrenos: Terreno[];
-  onFilteredTerrenosChange: (filteredTerrenos: Terreno[]) => void;
+export type FilterState = {
+  search: string;
+  precioMax: string;
+  areaMin: string;
+  ordering: string;
+  soloDestacados: boolean;
 };
 
-export function TerrainFilterSort({
-  terrenos,
-  onFilteredTerrenosChange,
-}: TerrainFilterSortProps) {
-  const [municipioFilter, setMunicipioFilter] = useState("");
-  const [minPrice, setMinPrice] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
-  const [minArea, setMinArea] = useState("");
-  const [sortOrder, setSortOrder] = useState("newest");
+type Props = {
+  filters: FilterState;
+  count: number;
+  isLoading: boolean;
+  onFiltersChange: (filters: FilterState) => void;
+};
 
-  const availableMunicipios = useMemo(() => {
-    const municipios = new Set(terrenos.map((terreno) => terreno.municipio));
-    return Array.from(municipios).sort();
-  }, [terrenos]);
+export function TerrainFilterSort({ filters, count, isLoading, onFiltersChange }: Props) {
+  const { search, precioMax, areaMin, ordering, soloDestacados } = filters;
+  const [localSearch, setLocalSearch] = useState(search);
 
   useEffect(() => {
-    let filtered = [...terrenos];
+    setLocalSearch(search);
+  }, [search]);
 
-    if (municipioFilter) {
-      filtered = filtered.filter((terreno) => terreno.municipio === municipioFilter);
-    }
+  const update = (next: Partial<FilterState>) =>
+    onFiltersChange({ ...filters, ...next });
 
-    const parsedMinPrice = Number(minPrice);
-    const parsedMaxPrice = Number(maxPrice);
-    const parsedMinArea = Number(minArea);
-
-    if (!Number.isNaN(parsedMinPrice) && minPrice !== "") {
-      filtered = filtered.filter((terreno) => terreno.price >= parsedMinPrice);
-    }
-
-    if (!Number.isNaN(parsedMaxPrice) && maxPrice !== "") {
-      filtered = filtered.filter((terreno) => terreno.price <= parsedMaxPrice);
-    }
-
-    if (!Number.isNaN(parsedMinArea) && minArea !== "") {
-      filtered = filtered.filter((terreno) => terreno.areaM2 >= parsedMinArea);
-    }
-
-    filtered.sort((a, b) => {
-      switch (sortOrder) {
-        case "price_asc":
-          return a.price - b.price;
-        case "price_desc":
-          return b.price - a.price;
-        default:
-          return 0;
-      }
+  const clearAll = () => {
+    setLocalSearch("");
+    onFiltersChange({
+      search: "",
+      precioMax: "",
+      areaMin: "",
+      ordering: "",
+      soloDestacados: false,
     });
+  };
 
-    onFilteredTerrenosChange(filtered);
-  }, [terrenos, municipioFilter, minPrice, maxPrice, minArea, sortOrder, onFilteredTerrenosChange]);
+  const hasActiveFilters = Boolean(search || precioMax || areaMin || ordering || soloDestacados);
+
+  function handleSearchSubmit() {
+    update({ search: localSearch.trim() });
+  }
 
   return (
     <div className="mb-8 space-y-4">
-      <div className="flex gap-3 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex items-stretch overflow-hidden rounded-[2rem] border border-line/60 bg-white shadow-[0_2px_16px_rgba(0,0,0,0.06)] transition focus-within:border-coral/30 focus-within:shadow-[0_4px_24px_rgba(255,56,92,0.12)]">
+        <div className="flex flex-1 items-center gap-3 px-5 py-3.5">
+          <svg className="h-4 w-4 flex-shrink-0 text-stone" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
+          </svg>
+          <div className="flex-1">
+            <p className="hidden text-[10px] font-bold uppercase tracking-widest text-stone/50 sm:block">
+              Zona o municipio
+            </p>
+            <input
+              type="text"
+              placeholder="¿Dónde buscas tu terreno?"
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearchSubmit()}
+              className="w-full bg-transparent text-sm font-medium text-ink placeholder:text-stone/50 outline-none"
+            />
+          </div>
+        </div>
+
+        <div className="hidden w-px self-stretch bg-line/50 sm:block" />
+
+        <div className="hidden items-center gap-2 px-5 sm:flex">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-stone/50">
+              Precio max.
+            </p>
+            <div className="flex items-center gap-1">
+              <span className="text-xs text-stone">$</span>
+              <input
+                type="number"
+                placeholder="Sin limite"
+                min="0"
+                value={precioMax}
+                onChange={(e) => update({ precioMax: e.target.value })}
+                className="w-24 bg-transparent text-sm font-medium text-ink placeholder:text-stone/40 outline-none"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="hidden w-px self-stretch bg-line/50 sm:block" />
+
+        <div className="hidden items-center gap-2 px-5 sm:flex">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-stone/50">
+              Superficie min.
+            </p>
+            <div className="flex items-center gap-1">
+              <input
+                type="number"
+                placeholder="Cualquier m2"
+                min="0"
+                value={areaMin}
+                onChange={(e) => update({ areaMin: e.target.value })}
+                className="w-24 bg-transparent text-sm font-medium text-ink placeholder:text-stone/40 outline-none"
+              />
+              <span className="text-xs text-stone">m2</span>
+            </div>
+          </div>
+        </div>
+
         <button
           type="button"
-          onClick={() => setMunicipioFilter("")}
-          className={`shrink-0 rounded-full px-4 py-2.5 text-sm font-medium transition ${
-            municipioFilter === "" ? "bg-ink text-white" : "border border-line bg-white/88 text-stone"
-          }`}
+          onClick={handleSearchSubmit}
+          className="m-1.5 flex items-center gap-2 rounded-full bg-coral px-4 py-2.5 text-sm font-bold text-white shadow-md transition hover:scale-[1.02] hover:bg-[#e92a5b] active:scale-95 sm:px-5"
+          aria-label="Buscar terrenos"
         >
-          Todos
+          {isLoading ? (
+            <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+          ) : (
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
+            </svg>
+          )}
+          <span className="hidden sm:inline">Buscar</span>
         </button>
-        {availableMunicipios.map((municipio) => (
-          <button
-            key={municipio}
-            type="button"
-            onClick={() => setMunicipioFilter(municipio)}
-            className={`shrink-0 rounded-full px-4 py-2.5 text-sm font-medium transition ${
-              municipioFilter === municipio
-                ? "bg-ink text-white"
-                : "border border-line bg-white/88 text-stone"
-            }`}
-          >
-            {municipio}
-          </button>
-        ))}
       </div>
 
-      <div className="rounded-[30px] border border-white/80 bg-white/82 p-4 shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
-        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-sm font-semibold text-ink">Filtra los terrenos</p>
-            <p className="text-sm text-stone">Ajusta precio, superficie y orden para encontrar mejores opciones.</p>
-          </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="flex rounded-full border border-line/60 bg-white p-1 shadow-sm">
           <button
             type="button"
-            onClick={() => {
-              setMunicipioFilter("");
-              setMinPrice("");
-              setMaxPrice("");
-              setMinArea("");
-              setSortOrder("newest");
-            }}
-            className="rounded-full border border-line bg-[#fcfaf7] px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-stone transition hover:bg-white"
+            onClick={() => update({ soloDestacados: false })}
+            className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-all ${
+              !soloDestacados ? "bg-ink text-white shadow-sm" : "text-stone hover:text-ink"
+            }`}
           >
-            Limpiar filtros
+            Todos
+          </button>
+          <button
+            type="button"
+            onClick={() => update({ soloDestacados: true })}
+            className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-semibold transition-all ${
+              soloDestacados ? "bg-coral text-white shadow-sm" : "text-stone hover:text-ink"
+            }`}
+          >
+            <span aria-hidden="true">⭐</span>
+            Destacados
           </button>
         </div>
 
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          <label className="rounded-2xl border border-line/80 bg-[#fcfaf7] px-4 py-3">
-            <span className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.18em] text-stone">
-              Precio desde
-            </span>
+        <select
+          value={ordering}
+          onChange={(e) => update({ ordering: e.target.value })}
+          className="cursor-pointer rounded-full border border-line/60 bg-white px-4 py-2 text-sm font-medium text-ink shadow-sm outline-none transition hover:border-ink/30"
+        >
+          <option value="">Relevancia</option>
+          <option value="precio_asc">Menor precio</option>
+          <option value="precio_desc">Mayor precio</option>
+          <option value="recientes">Mas recientes</option>
+          <option value="area_asc">Menor superficie</option>
+          <option value="area_desc">Mayor superficie</option>
+        </select>
+
+        <div className="flex gap-2 sm:hidden">
+          <div className="flex items-center gap-1.5 rounded-full border border-line/60 bg-white px-4 py-2 shadow-sm focus-within:border-coral/30">
+            <span className="text-xs font-semibold text-stone">$</span>
             <input
               type="number"
-              min="0"
-              placeholder="500000"
-              className="w-full bg-transparent text-sm font-medium text-ink outline-none"
-              value={minPrice}
-              onChange={(event) => setMinPrice(event.target.value)}
+              placeholder="Precio max"
+              value={precioMax}
+              onChange={(e) => update({ precioMax: e.target.value })}
+              className="w-20 bg-transparent text-sm text-ink outline-none placeholder:text-stone/40"
             />
-          </label>
-
-          <label className="rounded-2xl border border-line/80 bg-[#fcfaf7] px-4 py-3">
-            <span className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.18em] text-stone">
-              Precio hasta
-            </span>
+          </div>
+          <div className="flex items-center gap-1.5 rounded-full border border-line/60 bg-white px-4 py-2 shadow-sm focus-within:border-coral/30">
             <input
               type="number"
-              min="0"
-              placeholder="2000000"
-              className="w-full bg-transparent text-sm font-medium text-ink outline-none"
-              value={maxPrice}
-              onChange={(event) => setMaxPrice(event.target.value)}
+              placeholder="m2 min"
+              value={areaMin}
+              onChange={(e) => update({ areaMin: e.target.value })}
+              className="w-16 bg-transparent text-sm text-ink outline-none placeholder:text-stone/40"
             />
-          </label>
-
-          <label className="rounded-2xl border border-line/80 bg-[#fcfaf7] px-4 py-3">
-            <span className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.18em] text-stone">
-              Superficie minima
-            </span>
-            <input
-              type="number"
-              min="0"
-              placeholder="120"
-              className="w-full bg-transparent text-sm font-medium text-ink outline-none"
-              value={minArea}
-              onChange={(event) => setMinArea(event.target.value)}
-            />
-          </label>
-
-          <label className="rounded-2xl border border-line/80 bg-[#fcfaf7] px-4 py-3">
-            <span className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.18em] text-stone">
-              Orden
-            </span>
-            <select
-              className="w-full bg-transparent text-sm font-medium text-ink outline-none"
-              value={sortOrder}
-              onChange={(event) => setSortOrder(event.target.value)}
-            >
-              <option value="newest">Destacados y recientes</option>
-              <option value="price_asc">Precio ascendente</option>
-              <option value="price_desc">Precio descendente</option>
-            </select>
-          </label>
+            <span className="text-xs font-semibold text-stone">m2</span>
+          </div>
         </div>
+
+        {hasActiveFilters && (
+          <button
+            type="button"
+            onClick={clearAll}
+            className="rounded-full border border-line/60 bg-white px-4 py-2 text-sm font-medium text-stone shadow-sm transition hover:border-ink/30 hover:text-ink"
+          >
+            x Limpiar
+          </button>
+        )}
+
+        <p className="ml-auto text-sm text-stone">
+          {isLoading ? "Buscando..." : count === 0 ? "Sin resultados" : `${count} terreno${count !== 1 ? "s" : ""}`}
+        </p>
       </div>
     </div>
   );

@@ -75,7 +75,7 @@ def _build_notification_payload(
         "html": f"""
             <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #1f2937;">
               <h2>Nuevo interes en tu terreno</h2>
-              <p>Recibiste una nueva solicitud mediada desde LoteX.</p>
+              <p>Recibiste una nueva solicitud mediada desde Terrify.</p>
               {f'<p><strong>Modo prueba:</strong> este email fue redirigido a {escape(recipient_email)} para validacion.</p>' if settings.RESEND_TEST_TO_EMAIL else ''}
               <p><strong>Vendedor destino:</strong> {escape(seller_email or 'No disponible')}</p>
               <p><strong>Terreno:</strong> {escape(contact_request.terreno.title)}</p>
@@ -108,3 +108,51 @@ def _mark_notification_failed(contact_request: ContactRequest, message: str) -> 
     contact_request.save(
         update_fields=["notification_status", "notification_sent_at", "notification_error"]
     )
+
+
+def send_reply_notification(contact_request, message) -> None:
+    """Notifica al otro participante cuando hay una respuesta."""
+    from .models import Message  # Import circular avoidance
+    is_seller_replying = message.sender_role == Message.SenderRole.SELLER
+
+    # Si el vendedor responde → notificar al comprador
+    # Si el comprador responde → notificar al vendedor
+    recipient_email = (
+        contact_request.buyer_email
+        if is_seller_replying
+        else contact_request.terreno.user.email
+    )
+
+    # En desarrollo redirigir al email de prueba
+    recipient_email = settings.RESEND_TEST_TO_EMAIL or recipient_email
+
+    if not settings.RESEND_API_KEY or not recipient_email:
+        return
+
+    resend.api_key = settings.RESEND_API_KEY
+    sender_label = "El vendedor" if is_seller_replying else "El comprador"
+    frontend_url = getattr(settings, "FRONTEND_URL", "http://localhost:3000")
+
+    resend.Emails.send({
+        "from": settings.DEFAULT_FROM_EMAIL,
+        "to": [recipient_email],
+        "subject": f"Nueva respuesta en Terrify — {contact_request.terreno.title}",
+        "html": f"""
+        <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">
+            <h2 style="color: #1f1f1f;">{sender_label} te respondió 💬</h2>
+            <p style="color: #6a6a6a;">Sobre el terreno: <strong>{contact_request.terreno.title}</strong></p>
+            <div style="background: #f5f5f3; padding: 16px; border-radius: 12px; margin: 16px 0;">
+                <p style="color: #1f1f1f; margin: 0;">"{message.body[:200]}..."</p>
+            </div>
+            <a href="{frontend_url}/mensajes/{contact_request.id}"
+               style="display: inline-block; margin-top: 16px; padding: 12px 24px;
+                      background: #ff385c; color: white; border-radius: 999px;
+                      text-decoration: none; font-weight: bold;">
+                Ver conversación →
+            </a>
+            <p style="margin-top: 24px; color: #9a9a9a; font-size: 12px;">
+                Por seguridad, mantén tu conversación dentro de Terrify.
+            </p>
+        </div>
+        """,
+    })

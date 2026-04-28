@@ -1,5 +1,5 @@
 # ─── Core ────────────────────────────────────────────────────────
-Django==4.2.11
+Django==4.2.20
 djangorestframework==3.15.1
 
 # ─── Base de datos ───────────────────────────────────────────────
@@ -16,6 +16,7 @@ django-filter==24.1
 
 # ─── Variables de entorno ────────────────────────────────────────
 python-decouple==3.8
+requests==2.31.0
 
 # ─── Caché con Redis ─────────────────────────────────────────────
 django-redis==5.4.0
@@ -25,6 +26,8 @@ django-ratelimit==4.1.0
 
 # ─── Imágenes con Cloudinary ─────────────────────────────────────
 cloudinary==1.40.0
+google-auth==2.29.0
+google-auth-httplib2==0.2.0
 
 # ─── Emails ──────────────────────────────────────────────────────
 resend==2.3.0
@@ -34,3 +37,6 @@ django-csp==3.8
 
 # ─── Escaneo de vulnerabilidades (CI) ────────────────────────────
 pip-audit==2.7.3
+
+# ─── Rutas anidadas DRF ─────────────────────────────────────────
+drf-nested-routers==0.94.1

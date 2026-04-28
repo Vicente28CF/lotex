@@ -33,6 +33,9 @@ export type Terreno = {
   owner: TerrenoOwner | null;
   createdAt: string | null;
   updatedAt: string | null;
+  isFavorited?: boolean;
+  nearbyServices?: string[];
+  terrainType?: string;
 };
 
 export type AuthUser = {
@@ -51,6 +54,16 @@ export type AuthSession = {
   accessToken: string;
   refreshToken: string;
   user: AuthUser;
+};
+
+export type Message = {
+  id: string;
+  senderRole: "buyer" | "seller";
+  senderName: string;
+  body: string;
+  isFlagged: boolean;
+  createdAt: string;
+  isMine: boolean;
 };
 
 export type ContactRequestPayload = {
@@ -76,6 +89,8 @@ export type ContactRequest = {
   notificationSentAt: string | null;
   notificationError: string;
   createdAt: string;
+  messages: Message[];
+  lastMessage: { body: string; createdAt: string } | null;
 };
 
 export type SellerDashboardData = {
@@ -94,6 +109,8 @@ export type CreateTerrenoPayload = {
   latitude?: number | null;
   longitude?: number | null;
   status: "active" | "paused" | "sold";
+  nearbyServices?: string[];
+  terrainType?: string;
 };
 
 export type UpdateTerrenoPayload = CreateTerrenoPayload;

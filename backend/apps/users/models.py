@@ -25,7 +25,7 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin):
     """
-    Usuario personalizado de LoteX.
+    Usuario personalizado de Terrify.
     Roles:
       - normal  -> puede publicar hasta 3 terrenos gratis
       - agent   -> agente/inmobiliaria verificada (plan de pago)
@@ -39,10 +39,14 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email       = models.EmailField(unique=True)
+    google_id   = models.CharField(max_length=255, null=True, blank=True, unique=True)
     full_name   = models.CharField(max_length=150)
     phone       = models.CharField(max_length=20, blank=True)
     role        = models.CharField(max_length=10, choices=Role.choices, default=Role.NORMAL)
     is_verified = models.BooleanField(default=False)
+    email_verified = models.BooleanField(default=False)
+    email_verification_token = models.CharField(max_length=64, null=True, blank=True, unique=True)
+    email_verification_sent_at = models.DateTimeField(null=True, blank=True)
     is_active   = models.BooleanField(default=True)
     is_staff    = models.BooleanField(default=False)
     created_at  = models.DateTimeField(auto_now_add=True)

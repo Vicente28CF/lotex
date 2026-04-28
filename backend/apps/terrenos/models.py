@@ -24,6 +24,8 @@ class Terreno(models.Model):
     area_m2     = models.DecimalField(max_digits=10, decimal_places=2)
     municipio   = models.CharField(max_length=100)
     estado      = models.CharField(max_length=100, default="Jalisco")
+    nearby_services = models.JSONField(default=list, blank=True)
+    terrain_type = models.CharField(max_length=20, blank=True)
     address     = models.CharField(max_length=255, blank=True)
     latitude    = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     longitude   = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
@@ -80,3 +82,17 @@ class TerrenoImage(models.Model):
 
     def __str__(self):
         return f"Imagen {self.order} de {self.terreno.title}"
+
+class Favorite(models.Model):
+    id         = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user       = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="favorites")
+    terreno    = models.ForeignKey(Terreno, on_delete=models.CASCADE, related_name="favorited_by")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "terreno_favorites"
+        unique_together = ("user", "terreno")
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.user.email} favoritó {self.terreno.title}"

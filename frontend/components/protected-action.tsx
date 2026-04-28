@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { useAuth } from "@/components/auth-provider";
+import { useEffect, useState } from "react";
 
 type ProtectedActionProps = {
   actionLabel: string;
@@ -43,8 +44,13 @@ export function GuardedPanel({
   children,
 }: GuardedPanelProps) {
   const { isAuthenticated, isReady, isRestoring, sessionNotice } = useAuth();
+  const [isMounted, setIsMounted] = useState(false);
 
-  if (!isReady || isRestoring) {
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted || !isReady || isRestoring) {
     return (
       <section className="rounded-[32px] border border-white/80 bg-white/88 p-8 shadow-panel">
         <p className="text-sm text-stone">Restaurando sesion...</p>
