@@ -172,7 +172,7 @@ class ContactRequestViewSet(
     def mark_read(self, request, pk=None):
         """Marca una solicitud de contacto como leída."""
         contact = self.get_object()
-        if contact.status == ContactRequest.Status.PENDING:
+        if contact.status in [ContactRequest.Status.PENDING, ContactRequest.Status.REPLIED]:
             contact.status = ContactRequest.Status.READ
             contact.save(update_fields=["status"])
         return Response(ContactRequestListSerializer(contact, context=self.get_serializer_context()).data)
