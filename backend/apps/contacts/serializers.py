@@ -2,7 +2,8 @@ from rest_framework import serializers
 
 from apps.terrenos.models import Terreno
 
-from .models import ContactRequest
+from .filters import scan_message
+from .models import ContactRequest, Message
 
 
 class ContactRequestCreateSerializer(serializers.ModelSerializer):
@@ -44,8 +45,62 @@ class ContactRequestCreateSerializer(serializers.ModelSerializer):
         return ContactRequest.objects.create(buyer=request.user, **validated_data)
 
 
+class MessageCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Message
+        fields = ("body",)
+
+    def validate_body(self, value):
+        clean = value.strip()
+        if len(clean) < 2:
+            raise serializers.ValidationError("El mensaje es muy corto.")
+        if len(clean) > 1000:
+            raise serializers.ValidationError("Máximo 1000 caracteres.")
+        return clean
+
+    def create(self, validated_data):
+        request     = self.context["request"]
+        contact     = self.context["contact_request"]
+        is_seller   = contact.terreno.user_id == request.user.id
+        sender_role = Message.SenderRole.SELLER if is_seller else Message.SenderRole.BUYER
+
+        # Escanear por contenido sospechoso
+        is_flagged, flag_reason = scan_message(validated_data["body"])
+
+        return Message.objects.create(
+            contact_request=contact,
+            sender=request.user,
+            sender_role=sender_role,
+            body=validated_data["body"],
+            is_flagged=is_flagged,
+            flag_reason=flag_reason,
+        )
+
+
+class MessageSerializer(serializers.ModelSerializer):
+    sender_name = serializers.SerializerMethodField()
+    is_mine     = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Message
+        fields = ("id", "sender_role", "sender_name", "body", "is_flagged", "created_at", "is_mine")
+
+    def get_sender_name(self, obj):
+        if obj.sender:
+            return obj.sender.full_name or obj.sender.email.split("@")[0]
+        return "Usuario"
+
+    def get_is_mine(self, obj):
+        request = self.context.get("request")
+        if request and obj.sender_id:
+            return obj.sender_id == request.user.id
+        return False
+
+
 class ContactRequestListSerializer(serializers.ModelSerializer):
-    terreno = serializers.SerializerMethodField()
+    terreno      = serializers.SerializerMethodField()
+    messages     = MessageSerializer(many=True, read_only=True)
+    last_message = serializers.SerializerMethodField()
 
     class Meta:
         model = ContactRequest
@@ -61,13 +116,18 @@ class ContactRequestListSerializer(serializers.ModelSerializer):
             "notification_sent_at",
             "notification_error",
             "created_at",
+            "messages",
+            "last_message",
         )
 
     def get_terreno(self, obj):
-        return {
-            "title": obj.terreno.title,
-            "slug": obj.terreno.slug,
-        }
+        return {"title": obj.terreno.title, "slug": obj.terreno.slug}
+
+    def get_last_message(self, obj):
+        last = obj.messages.last()
+        if last:
+            return {"body": last.body[:80], "created_at": last.created_at}
+        return None
 
 
 class ContactRequestStatusSerializer(serializers.ModelSerializer):

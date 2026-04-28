@@ -16,7 +16,7 @@ from .services import ContactNotificationServiceError
 TEST_CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-        "LOCATION": "lotex-tests-contacts",
+        "LOCATION": "terrify-tests-contacts",
     }
 }
 
@@ -27,18 +27,18 @@ class ContactRequestApiTests(APITestCase):
         self.seller = User.objects.create_user(
             email="seller@test.com",
             full_name="Seller User",
-            password="LoteXPassSegura28",
+            password="TerrifyPassSegura28",
         )
         self.buyer = User.objects.create_user(
             email="buyer@test.com",
             full_name="Buyer User",
-            password="LoteXPassSegura28",
+            password="TerrifyPassSegura28",
             phone="3311112233",
         )
         self.other_seller = User.objects.create_user(
             email="other-seller@test.com",
             full_name="Other Seller",
-            password="LoteXPassSegura28",
+            password="TerrifyPassSegura28",
         )
         self.terreno = Terreno.objects.create(
             user=self.seller,

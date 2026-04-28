@@ -11,7 +11,7 @@ export function ShareButton({ title, text }: ShareButtonProps) {
       try {
         await navigator.share({
           title,
-          text: text ?? `Mira este terreno en LoteX: ${title}`,
+          text: text ?? `Mira este terreno en Terrify: ${title}`,
           url: window.location.href,
         });
       } catch {

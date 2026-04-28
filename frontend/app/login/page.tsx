@@ -1,96 +1,79 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-
-import { LoginForm } from "@/components/login-form";
+import Link from "next/link";
+import { AuthForm } from "@/components/auth-form";
 import { SiteHeader } from "@/components/site-header";
 
 export const metadata: Metadata = {
-  title: "Login | LoteX",
+  title: "Iniciar sesión | LoteX",
 };
-
-const accessPoints = [
-  "Publicar tus terrenos",
-  "Escribir al vendedor cuando te interese una propiedad",
-  "Entrar a tu panel de forma segura",
-];
-
-const productPrinciples = [
-  "Puedes ver terrenos sin crear cuenta",
-  "Solo pedimos acceso cuando vas a hacer una accion importante",
-  "Tu cuenta ayuda a proteger la informacion y los mensajes",
-];
 
 export default function LoginPage() {
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen bg-sand pb-24 md:pb-0">
       <SiteHeader />
 
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <section className="relative overflow-hidden rounded-[36px] border border-white/80 bg-white/78 px-5 py-6 soft-ring sm:px-8 sm:py-8 lg:px-10 lg:py-10">
-          <div className="pointer-events-none absolute -left-10 top-12 h-40 w-40 rounded-full bg-[#ffd9c9]/45 blur-3xl" />
-          <div className="pointer-events-none absolute bottom-8 right-8 h-40 w-40 rounded-full bg-[#ffe8a8]/35 blur-3xl" />
+      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="grid min-h-[600px] overflow-hidden rounded-[2.5rem] border border-white/60 bg-white shadow-[0_8px_40px_rgba(0,0,0,0.06)] lg:grid-cols-[1fr_1fr]">
+          
+          {/* Columna izquierda — Branding — OCULTO en mobile */}
+          <div className="relative hidden lg:flex flex-col justify-between overflow-hidden bg-ink p-10 lg:p-14">
+            
+            {/* Decoración de fondo */}
+            <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-coral/20 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-10 -left-10 h-48 w-48 rounded-full bg-coral/10 blur-3xl" />
 
-          <div className="relative grid gap-8 lg:grid-cols-[1.02fr_0.98fr]">
-            <section className="space-y-6">
-              <div className="flex flex-wrap gap-2">
-                <span className="inline-flex rounded-full bg-rose-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-coral">
-                  Acceso seguro
-                </span>
-                <span className="inline-flex rounded-full border border-line bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-stone">
-                  Solo cuando hace falta
-                </span>
+            {/* Logo */}
+            <Link href="/" className="relative flex items-center gap-3">
+              <div className="grid h-11 w-11 place-items-center rounded-full bg-coral text-sm font-bold text-white shadow-[0_8px_20px_rgba(255,56,92,0.4)]">
+                LX
               </div>
+              <span className="text-lg font-semibold text-white">LoteX</span>
+            </Link>
 
-              <div className="max-w-4xl">
-                <h1 className="text-[2.4rem] font-semibold leading-[1.02] tracking-[-0.045em] text-ink sm:text-[3.5rem] lg:text-[4.4rem]">
-                  Inicia sesion para publicar tu terreno o pedir informes.
-                </h1>
-                <p className="mt-5 max-w-2xl text-base leading-8 text-stone sm:text-lg">
-                  Puedes recorrer los terrenos libremente. Solo te pedimos iniciar sesion cuando
-                  quieras enviar un mensaje o administrar tus publicaciones.
-                </p>
-              </div>
+            {/* Mensaje central */}
+            <div className="relative space-y-6">
+              <h1 className="text-[2.2rem] font-bold leading-[1.1] tracking-[-0.03em] text-white lg:text-[2.8rem]">
+                Tu terreno<br />
+                <span className="text-coral">te está esperando.</span>
+              </h1>
+              <p className="max-w-xs text-base leading-relaxed text-white/60">
+                Inicia sesión para guardar favoritos, publicar terrenos y contactar vendedores directo.
+              </p>
 
-              <div className="grid gap-3 sm:grid-cols-3">
-                {accessPoints.map((item, index) => (
-                  <div
-                    key={item}
-                    className="rounded-[28px] border border-white/80 bg-white/90 px-5 py-5 shadow-[0_18px_35px_rgba(15,23,42,0.06)] rise-in"
-                    style={{ animationDelay: `${index * 80}ms` }}
-                  >
-                    <p className="text-sm leading-7 text-ink">{item}</p>
+              {/* 3 puntos clave — minimalistas */}
+              <div className="space-y-3 pt-2">
+                {[
+                  "Explora sin registrarte",
+                  "Publica y vende más rápido",
+                  "Contacto directo, sin intermediarios",
+                ].map((point) => (
+                  <div key={point} className="flex items-center gap-3">
+                    <div className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-coral" />
+                    <p className="text-sm font-medium text-white/70">{point}</p>
                   </div>
                 ))}
               </div>
+            </div>
 
-              <div className="rounded-[30px] border border-white/80 bg-[#1f1f1f] p-6 text-white shadow-[0_18px_44px_rgba(15,23,42,0.16)]">
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/60">
-                  Para que sirve tu cuenta
-                </p>
-                <div className="mt-5 space-y-3">
-                  {productPrinciples.map((item) => (
-                    <div
-                      key={item}
-                      className="rounded-[22px] border border-white/10 bg-white/5 px-4 py-4 text-sm leading-7 text-white/88"
-                    >
-                      {item}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-
-            <Suspense
-              fallback={
-                <div className="rounded-[32px] border border-white/80 bg-white/88 p-8 shadow-panel">
-                  Cargando acceso...
-                </div>
-              }
-            >
-              <LoginForm />
-            </Suspense>
+            {/* Footer izquierdo */}
+            <p className="relative text-xs text-white/30">
+              © 2025 LoteX · Jalisco, México
+            </p>
           </div>
-        </section>
+
+          {/* Columna derecha — Formulario */}
+          <div className="flex items-center justify-center p-8 lg:p-14">
+            <div className="w-full max-w-sm">
+              <Suspense fallback={
+                <div className="text-sm text-stone">Cargando...</div>
+              }>
+                <AuthForm defaultMode="login" />
+              </Suspense>
+            </div>
+          </div>
+
+        </div>
       </div>
     </main>
   );

@@ -25,21 +25,28 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, min_length=8, style={"input_type": "password"})
+    password = serializers.CharField(
+        write_only=True,
+        min_length=8,
+        validators=[validate_password],
+        style={"input_type": "password"},
+    )
 
     class Meta:
         model = User
         fields = ("email", "full_name", "phone", "password")
 
     def validate_email(self, value):
-        email = User.objects.normalize_email(value)
+        email = value.strip().lower()
         if User.objects.filter(email=email).exists():
             raise serializers.ValidationError("Ya existe una cuenta con este email.")
         return email
 
-    def validate_password(self, value):
-        validate_password(value)
-        return value
+    def validate_full_name(self, value):
+        full_name = value.strip()
+        if not full_name:
+            raise serializers.ValidationError("El nombre es obligatorio.")
+        return full_name
 
     def create(self, validated_data):
         password = validated_data.pop("password")
@@ -66,8 +73,17 @@ class LoginSerializer(serializers.Serializer):
         return attrs
 
 
+class GoogleAuthSerializer(serializers.Serializer):
+    credential = serializers.CharField()
+
+    def validate_credential(self, value):
+        credential = value.strip()
+        if not credential:
+            raise serializers.ValidationError("Token de Google requerido.")
+        return credential
+
+
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("full_name", "phone")
-

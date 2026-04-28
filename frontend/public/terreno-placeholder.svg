@@ -22,5 +22,5 @@
   <circle cx="180" cy="140" r="60" fill="#ffd87a" opacity="0.55"/>
   <!-- Logo text -->
   <text x="600" y="370" font-family="sans-serif" font-size="44" font-weight="600" fill="#9e9188" text-anchor="middle">Terreno disponible</text>
-  <text x="600" y="420" font-family="sans-serif" font-size="22" fill="#b5aca3" text-anchor="middle">LoteX</text>
+  <text x="600" y="420" font-family="sans-serif" font-size="22" fill="#b5aca3" text-anchor="middle">Terrify</text>
 </svg>

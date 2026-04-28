@@ -1,41 +1,123 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 import { EmptyState } from "@/components/empty-state";
 import { TerrainCard } from "@/components/terrain-card";
-import { TerrainFilterSort } from "@/components/terrain-filter-sort";
-import { fetchTerrenos } from "@/lib/api";
+import { TerrainCardSkeleton } from "@/components/terrain-card-skeleton";
+import { TerrainFilterSort, type FilterState } from "@/components/terrain-filter-sort";
+import { fetchTerrenos, type TerrenoFilters } from "@/lib/api";
 import type { Terreno } from "@/lib/types";
+
+function buildApiFilters(filters: FilterState): TerrenoFilters {
+  return {
+    search: filters.search || undefined,
+    precio_max: filters.precioMax ? Number(filters.precioMax) : undefined,
+    min_area: filters.areaMin ? Number(filters.areaMin) : undefined,
+    is_featured: filters.soloDestacados ? true : undefined,
+    ordering: filters.ordering || undefined,
+  };
+}
+
+function hasActiveFilters(filters: FilterState) {
+  return Boolean(
+    filters.search ||
+      filters.precioMax ||
+      filters.areaMin ||
+      filters.ordering ||
+      filters.soloDestacados,
+  );
+}
+
+function mergeTerrenos(previous: Terreno[], incoming: Terreno[]) {
+  const seen = new Set(previous.map((terreno) => terreno.id));
+  const next = [...previous];
+
+  for (const terreno of incoming) {
+    if (!seen.has(terreno.id)) {
+      seen.add(terreno.id);
+      next.push(terreno);
+    }
+  }
+
+  return next;
+}
 
 export function TerrainBrowser({
   initialTerrenos,
   initialHasNextPage,
+  initialCount,
 }: {
   initialTerrenos: Terreno[];
   initialHasNextPage: boolean;
+  initialCount: number;
 }) {
-  const [allTerrenos, setAllTerrenos] = useState(initialTerrenos);
-  const [filteredTerrenos, setFilteredTerrenos] = useState(initialTerrenos);
-  const [page, setPage] = useState(1);
-  const [hasNextPage, setHasNextPage] = useState(initialHasNextPage);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const searchParams = useSearchParams();
 
-  // Cuando cargamos más terrenos, los pasamos también al filtro
+  const [terrenos, setTerrenos] = useState(initialTerrenos);
+  const [count, setCount] = useState(initialCount);
+  const [hasNextPage, setHasNextPage] = useState(initialHasNextPage);
+  const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const hasAppliedInitialFiltersRef = useRef(false);
+  const requestIdRef = useRef(0);
+  const [filters, setFilters] = useState<FilterState>({
+    search: searchParams.get("search") ?? searchParams.get("municipio") ?? "",
+    precioMax: searchParams.get("precio_max") ?? "",
+    areaMin: searchParams.get("area_min") ?? "",
+    ordering: "",
+    soloDestacados: searchParams.get("is_featured") === "true" || searchParams.get("destacados") === "true",
+  });
+
+  const applyFilters = useCallback(async (nextFilters: FilterState) => {
+    const requestId = requestIdRef.current + 1;
+    requestIdRef.current = requestId;
+    setIsLoading(true);
+    setPage(1);
+
+    try {
+      const response = await fetchTerrenos(1, buildApiFilters(nextFilters));
+      if (requestId !== requestIdRef.current) {
+        return;
+      }
+      setTerrenos(response.results);
+      setCount(response.count);
+      setHasNextPage(!!response.next);
+    } catch {
+      // Conservamos resultados previos si falla la consulta.
+    } finally {
+      if (requestId === requestIdRef.current) {
+        setIsLoading(false);
+      }
+    }
+  }, []);
+
   useEffect(() => {
-    setFilteredTerrenos(allTerrenos);
-  }, [allTerrenos]);
+    if (!hasAppliedInitialFiltersRef.current && hasActiveFilters(filters)) {
+      hasAppliedInitialFiltersRef.current = true;
+      void applyFilters(filters);
+    }
+  }, [applyFilters, filters]);
+
+  const handleFiltersChange = (nextFilters: FilterState) => {
+    setFilters(nextFilters);
+    void applyFilters(nextFilters);
+  };
 
   async function loadMore() {
     setIsLoadingMore(true);
+
     try {
       const nextPage = page + 1;
-      const response = await fetchTerrenos(nextPage);
-      setAllTerrenos((prev) => [...prev, ...response.results]);
+      const response = await fetchTerrenos(nextPage, buildApiFilters(filters));
+      setTerrenos((prev) => mergeTerrenos(prev, response.results));
+      setCount(response.count);
       setHasNextPage(!!response.next);
       setPage(nextPage);
     } catch {
-      alert("No pudimos cargar más terrenos. Intenta de nuevo.");
+      alert("No pudimos cargar mas terrenos. Intenta de nuevo.");
     } finally {
       setIsLoadingMore(false);
     }
@@ -43,42 +125,41 @@ export function TerrainBrowser({
 
   return (
     <>
-      <TerrainFilterSort terrenos={allTerrenos} onFilteredTerrenosChange={setFilteredTerrenos} />
+      <TerrainFilterSort
+        filters={filters}
+        count={count}
+        isLoading={isLoading}
+        onFiltersChange={handleFiltersChange}
+      />
 
-      <div className="mb-5 flex flex-col gap-3 rounded-[28px] border border-white/80 bg-white/82 px-5 py-4 shadow-[0_18px_40px_rgba(15,23,42,0.06)] sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-sm font-medium text-ink">{filteredTerrenos.length} terrenos visibles</p>
-          <p className="text-sm text-stone">Explora libremente y contacta solo cuando encuentres una buena opcion.</p>
+      {isLoading ? (
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {Array.from({ length: 8 }).map((_, index) => (
+            <TerrainCardSkeleton key={index} />
+          ))}
         </div>
-        <div className="flex flex-wrap gap-2">
-          <span className="rounded-full border border-line/80 bg-[#fcfaf7] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-stone">
-            Sin registro al inicio
-          </span>
-          <span className="rounded-full border border-line/80 bg-[#fff8f4] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-coral">
-            Facil de usar en celular
-          </span>
+      ) : terrenos.length === 0 ? (
+        <EmptyState
+          message="Sin resultados."
+          description="Ajusta los filtros o amplia la busqueda para ver mas terrenos."
+        />
+      ) : (
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {terrenos.map((terreno) => (
+            <TerrainCard key={terreno.id} terreno={terreno} />
+          ))}
         </div>
-      </div>
+      )}
 
-      <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-        {filteredTerrenos.length === 0 ? (
-          <EmptyState
-            message="No se encontraron terrenos con estos filtros."
-            description="Prueba con otro municipio o ajusta rangos de precio y area."
-          />
-        ) : (
-          filteredTerrenos.map((terreno) => <TerrainCard key={terreno.id} terreno={terreno} />)
-        )}
-      </div>
-
-      {hasNextPage && filteredTerrenos.length === allTerrenos.length && (
+      {!isLoading && hasNextPage && (
         <div className="mt-12 flex justify-center">
           <button
+            type="button"
             onClick={loadMore}
             disabled={isLoadingMore}
-            className="flex min-w-[200px] items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-ink shadow-[0_8px_20px_rgba(15,23,42,0.08)] transition hover:-translate-y-0.5 hover:shadow-[0_12px_25px_rgba(15,23,42,0.12)] disabled:opacity-70 disabled:hover:translate-y-0"
+            className="rounded-full border-2 border-ink px-8 py-3 text-sm font-bold text-ink transition hover:bg-ink hover:text-white disabled:opacity-40"
           >
-            {isLoadingMore ? "Cargando..." : "Cargar más terrenos"}
+            {isLoadingMore ? "Cargando..." : "Mostrar mas"}
           </button>
         </div>
       )}

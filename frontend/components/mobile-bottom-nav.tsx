@@ -46,36 +46,41 @@ export function MobileBottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 px-3 pb-[max(0.85rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur md:hidden">
-      <div className="mx-auto grid max-w-md grid-cols-3 gap-2 rounded-[28px] border border-white/80 bg-white/88 p-2 shadow-[0_-12px_30px_rgba(15,23,42,0.08)]">
-        {navItems.map((item) => {
-          const isActive =
-            pathname === item.href ||
-            (item.href !== "/" && pathname.startsWith(item.href));
+    <nav className="fixed inset-x-0 bottom-0 z-50 md:hidden">
+      {/* Fondo sólido que nunca desaparece */}
+      <div className="bg-white/95 backdrop-blur-md border-t border-line/40 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
+        <div className="mx-auto grid max-w-sm grid-cols-3 gap-1">
+          {navItems.map((item) => {
+            const isActive =
+              pathname === item.href ||
+              (item.href !== "/" && pathname.startsWith(item.href));
 
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex flex-col items-center gap-1 rounded-[20px] px-3 py-2.5 text-[11px] font-medium transition ${
-                isActive
-                  ? "bg-[#fff2ed] text-coral shadow-[0_10px_20px_rgba(255,56,92,0.14)]"
-                  : "text-stone"
-              }`}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                className={`h-5 w-5 transition ${isActive ? "scale-105" : ""}`}
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex flex-col items-center gap-1 rounded-2xl px-3 py-2.5 text-[11px] font-semibold transition-all ${
+                  isActive
+                    ? "bg-coral/10 text-coral"
+                    : "text-stone hover:text-ink"
+                }`}
               >
-                {item.icon}
-              </svg>
-              <span>{item.label}</span>
-            </Link>
-          );
-        })}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  className={`h-6 w-6 transition-transform ${
+                    isActive ? "scale-110" : ""
+                  }`}
+                >
+                  {item.icon}
+                </svg>
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+        </div>
       </div>
     </nav>
   );

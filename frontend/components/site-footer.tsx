@@ -20,7 +20,7 @@ const footerGroups = [
     ],
   },
   {
-    title: "LoteX",
+    title: "Terrify",
     links: [
       { href: "/", label: "Como funciona" },
       { href: "/#listado", label: "Terrenos disponibles" },
@@ -62,7 +62,7 @@ export function SiteFooter() {
 
         <div className="flex flex-col gap-4 pt-5 text-sm text-stone lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-            <span>{`© ${currentYear} LoteX`}</span>
+            <span>{`© ${currentYear} Terrify`}</span>
             {legalLinks.map((link, index) => (
               <div key={link.label} className="flex items-center gap-3">
                 <span className="text-stone/60">{index === 0 ? "·" : "·"}</span>

@@ -21,13 +21,13 @@ export async function generateMetadata({ params }: TerrenoDetailPageProps): Prom
       title: `${terreno.title} en ${terreno.municipio}`,
       description: terreno.shortDescription,
       openGraph: {
-        title: `${terreno.title} — LoteX`,
+        title: `${terreno.title} — Terrify`,
         description: terreno.shortDescription,
         images: terreno.image ? [{ url: terreno.image }] : [],
       },
     };
   } catch {
-    return { title: "Terreno | LoteX" };
+    return { title: "Terreno | Terrify" };
   }
 }
 

@@ -169,8 +169,10 @@ LOTEX_MAX_IMAGE_FILE_SIZE = config("LOTEX_MAX_IMAGE_FILE_SIZE", default=5 * 1024
 
 # ─── Email con Resend ─────────────────────────────────────────────────────────
 RESEND_API_KEY = config("RESEND_API_KEY", default="")
-DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="noreply@lotex.mx")
+DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="noreply@terrify.mx")
 RESEND_TEST_TO_EMAIL = config("RESEND_TEST_TO_EMAIL", default="")
+FRONTEND_URL = config("FRONTEND_URL", default="http://localhost:3000")
+GOOGLE_CLIENT_ID = config("GOOGLE_CLIENT_ID", default="")
 
 # ─── Logging base ────────────────────────────────────────────────────────────
 LOGGING = {
@@ -218,6 +220,8 @@ LOGGING = {
 # ─── Content Security Policy ─────────────────────────────────────────────────
 CSP_DEFAULT_SRC = ("'self'",)
 CSP_STYLE_SRC = ("'self'", "'unsafe-inline'")
-CSP_SCRIPT_SRC = ("'self'",)
+CSP_SCRIPT_SRC = ("'self'", "https://accounts.google.com")
+CSP_CONNECT_SRC = ("'self'", "https://accounts.google.com", "https://oauth2.googleapis.com")
+CSP_FRAME_SRC = ("'self'", "https://accounts.google.com")
 CSP_IMG_SRC = ("'self'", "data:", "res.cloudinary.com")
 CSP_FONT_SRC = ("'self'",)

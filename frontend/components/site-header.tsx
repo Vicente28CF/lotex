@@ -1,13 +1,29 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 import { useAuth } from "@/components/auth-provider";
 
 export function SiteHeader() {
   const { isAuthenticated, isRefreshing, isRestoring, logout, session, sessionNotice } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
+  const [scrolled, setScrolled] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    function handleScroll() {
+      setScrolled(window.scrollY > 10);
+    }
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const noticeStyles =
     sessionNotice?.type === "error"
@@ -17,9 +33,9 @@ export function SiteHeader() {
         : "border-sky-200 bg-sky-50 text-sky-700";
 
   return (
-    <header className="sticky top-0 z-30 border-b border-line/70 bg-[#fffdf9]/75 backdrop-blur-2xl">
+    <header className={`sticky top-0 z-30 border-b border-line/70 bg-[#fffdf9]/75 backdrop-blur-2xl transition-shadow duration-300 ${scrolled ? "shadow-[0_4px_20px_rgba(0,0,0,0.06)]" : ""}`}>
       <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
-        {isRestoring || isRefreshing || sessionNotice ? (
+        {isMounted && (isRestoring || isRefreshing || sessionNotice) ? (
           <div
             className={`mb-3 rounded-[18px] border px-4 py-2 text-sm ${
               isRestoring || isRefreshing ? "border-sky-200 bg-sky-50 text-sky-700" : noticeStyles
@@ -40,64 +56,38 @@ export function SiteHeader() {
                 LX
               </div>
               <div className="leading-tight">
-                <p className="text-base font-semibold text-coral">LoteX</p>
+                <p className="text-base font-semibold text-coral">Terrify</p>
                 <p className="text-xs text-stone">Compra y vende terrenos con claridad</p>
               </div>
             </Link>
 
-            <nav className="flex items-center gap-2 rounded-full border border-line/80 bg-white/80 p-1 text-sm font-medium text-stone shadow-[0_12px_24px_rgba(15,23,42,0.05)]">
-              <Link href="/" className="rounded-full px-4 py-2 transition hover:bg-sand hover:text-ink">
+            <nav className="flex items-center gap-1.5 rounded-full border border-line/80 bg-white/80 p-1 text-sm font-medium text-stone shadow-[0_12px_24px_rgba(15,23,42,0.05)]">
+              <Link href="/" title="Explorar terrenos" className={`rounded-full px-4 py-2 transition hover:bg-sand hover:text-ink active:scale-95 ${pathname === "/" ? "bg-sand text-ink" : ""}`}>
                 Explorar
               </Link>
-              <Link href="/publicar" className="rounded-full px-4 py-2 transition hover:bg-sand hover:text-ink">
-                Publicar
+              {isAuthenticated && (
+                <Link href="/favoritos" title="Ver terrenos guardados" className={`rounded-full px-4 py-2 transition hover:bg-sand hover:text-ink active:scale-95 ${pathname === "/favoritos" ? "bg-sand text-ink" : ""}`}>
+                  Guardados
+                </Link>
+              )}
+              <Link href="/guia-legal" title="Guía antifraude" className="flex items-center gap-1.5 rounded-full px-4 py-2 font-bold text-coral/90 transition hover:bg-coral/5 hover:text-coral active:scale-95">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                Antifraude
               </Link>
             </nav>
           </div>
 
-          <div className="glass-panel flex min-w-[360px] items-center justify-between rounded-full border border-white/80 px-3 py-2 shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
-            <div className="flex items-center gap-4">
-              <div className="rounded-full px-3 py-1.5">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone">
-                  Ubicacion
-                </p>
-                <p className="text-sm font-medium text-ink">Jalisco</p>
-              </div>
-              <span className="h-8 w-px bg-line" />
-              <div className="rounded-full px-3 py-1.5">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone">
-                  Precio
-                </p>
-                <p className="text-sm font-medium text-ink">Flexible</p>
-              </div>
-            </div>
-            <button
-              type="button"
-              className="grid h-10 w-10 place-items-center rounded-full bg-coral text-white shadow-[0_10px_20px_rgba(255,56,92,0.28)]"
-              aria-label="Buscar"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                className="h-5 w-5"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
-            </button>
-          </div>
-
           <div className="flex items-center gap-3">
+            <Link
+              href="/publicar"
+              className="rounded-full bg-coral px-5 py-2 text-sm font-bold text-white shadow-[0_4px_14px_rgba(255,56,92,0.3)] transition hover:-translate-y-px hover:bg-[#e92a5b] hover:shadow-[0_6px_20px_rgba(255,56,92,0.4)] active:scale-95"
+            >
+              Publica gratis
+            </Link>
             {isAuthenticated && session ? (
               <>
-                <span className="rounded-full border border-line bg-white/85 px-4 py-2 text-sm text-stone">
-                  {session.user.fullName}
+                <span className="rounded-full border border-line bg-white/85 px-4 py-2 text-sm text-stone max-w-[200px] truncate">
+                  {session.user.fullName || session.user.email.split("@")[0] || "Mi Cuenta"}
                 </span>
                 <button
                   type="button"
@@ -125,7 +115,7 @@ export function SiteHeader() {
                 LX
               </div>
               <div className="leading-tight">
-                <p className="text-base font-semibold text-coral">LoteX</p>
+                <p className="text-base font-semibold text-coral">Terrify</p>
                 <p className="text-xs text-stone">Terrenos en tu zona</p>
               </div>
             </Link>
@@ -163,37 +153,10 @@ export function SiteHeader() {
             </button>
           </div>
 
-          <div className="glass-panel mt-4 rounded-[24px] border border-white/80 px-4 py-3 shadow-[0_12px_24px_rgba(15,23,42,0.08)]">
-            <div className="flex items-center gap-3">
-              <div className="grid h-10 w-10 place-items-center rounded-full bg-coral text-white">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  className="h-5 w-5"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              </div>
-              <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-ink">Encuentra terrenos en Jalisco</p>
-                <p className="truncate text-xs text-stone">
-                  Revisa zona, precio y superficie en un solo lugar
-                </p>
-              </div>
-            </div>
-          </div>
-
           {isMobileMenuOpen ? (
             <div
               id="mobile-menu"
-              className="glass-panel mt-4 rounded-[28px] border border-white/80 p-4 shadow-panel"
+              className="glass-panel mt-4 rounded-[28px] border border-white/80 p-4 shadow-panel animate-slide-down"
             >
               <div className="space-y-1 text-sm font-medium text-ink">
                 <Link
@@ -203,19 +166,22 @@ export function SiteHeader() {
                 >
                   Explorar terrenos
                 </Link>
+                {isAuthenticated && (
+                  <Link
+                    href="/favoritos"
+                    className="block rounded-2xl px-4 py-3 transition hover:bg-sand"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Guardados
+                  </Link>
+                )}
                 <Link
-                  href="/publicar"
-                  className="block rounded-2xl px-4 py-3 transition hover:bg-sand"
+                  href="/guia-legal"
+                  className="flex items-center gap-2 rounded-2xl px-4 py-3 font-bold text-coral transition hover:bg-coral/5"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Publicar terreno
-                </Link>
-                <Link
-                  href="/#listado"
-                  className="block rounded-2xl px-4 py-3 transition hover:bg-sand"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Ver terrenos
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                  Guía Antifraude
                 </Link>
                 {isAuthenticated ? (
                   <button
@@ -226,7 +192,7 @@ export function SiteHeader() {
                     }}
                     className="block w-full rounded-2xl px-4 py-3 text-left transition hover:bg-sand"
                   >
-                    Cerrar sesion
+Cerrar sesión
                   </button>
                 ) : (
                   <Link
@@ -234,9 +200,19 @@ export function SiteHeader() {
                     className="block rounded-2xl px-4 py-3 transition hover:bg-sand"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Iniciar sesion
+Iniciar sesión
                   </Link>
                 )}
+
+                <div className="mt-3 border-t border-line/40 pt-3">
+                  <Link
+                    href="/publicar"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center justify-center rounded-2xl bg-coral px-4 py-3.5 text-sm font-bold text-white transition hover:bg-[#e92a5b] active:scale-95"
+                  >
+                    Publica tu terreno gratis →
+                  </Link>
+                </div>
               </div>
             </div>
           ) : null}

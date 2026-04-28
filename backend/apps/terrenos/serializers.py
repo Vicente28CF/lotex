@@ -15,6 +15,7 @@ class TerrenoImageSerializer(serializers.ModelSerializer):
 class TerrenoListSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
     short_description = serializers.SerializerMethodField()
+    is_favorited = serializers.SerializerMethodField()
 
     class Meta:
         model = Terreno
@@ -30,6 +31,7 @@ class TerrenoListSerializer(serializers.ModelSerializer):
             "status",
             "is_featured",
             "image",
+            "is_favorited",
         )
 
     def get_image(self, obj):
@@ -42,10 +44,17 @@ class TerrenoListSerializer(serializers.ModelSerializer):
     def get_short_description(self, obj):
         return obj.description[:140].strip()
 
+    def get_is_favorited(self, obj):
+        request = self.context.get("request")
+        if request and request.user.is_authenticated:
+            return request.user.favorites.filter(terreno=obj).exists()
+        return False
+
 
 class TerrenoDetailSerializer(serializers.ModelSerializer):
     images = TerrenoImageSerializer(many=True, read_only=True)
     owner = serializers.SerializerMethodField()
+    is_favorited = serializers.SerializerMethodField()
 
     class Meta:
         model = Terreno
@@ -66,6 +75,9 @@ class TerrenoDetailSerializer(serializers.ModelSerializer):
             "views_count",
             "images",
             "owner",
+            "is_favorited",
+            "nearby_services",
+            "terrain_type",
             "created_at",
             "updated_at",
         )
@@ -75,6 +87,12 @@ class TerrenoDetailSerializer(serializers.ModelSerializer):
             "full_name": obj.user.full_name,
             "is_verified": obj.user.is_verified,
         }
+
+    def get_is_favorited(self, obj):
+        request = self.context.get("request")
+        if request and request.user.is_authenticated:
+            return request.user.favorites.filter(terreno=obj).exists()
+        return False
 
 
 class TerrenoWriteSerializer(serializers.ModelSerializer):
@@ -92,6 +110,8 @@ class TerrenoWriteSerializer(serializers.ModelSerializer):
             "longitude",
             "status",
             "is_featured",
+            "nearby_services",
+            "terrain_type",
         )
         read_only_fields = ("is_featured",)
 

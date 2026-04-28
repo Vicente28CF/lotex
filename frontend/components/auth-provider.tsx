@@ -38,7 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let isCancelled = false;
 
     async function restoreSession() {
-      const stored = window.sessionStorage.getItem("lotex-auth");
+      const stored = window.sessionStorage.getItem("terrify-auth");
 
       if (!stored) {
         if (!isCancelled) {
@@ -63,7 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             message: "Sesion restaurada correctamente.",
           });
         } else {
-          window.sessionStorage.removeItem("lotex-auth");
+          window.sessionStorage.removeItem("terrify-auth");
           setSession(null);
           setSessionNotice({
             type: "error",
@@ -71,7 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           });
         }
       } catch {
-        window.sessionStorage.removeItem("lotex-auth");
+        window.sessionStorage.removeItem("terrify-auth");
         if (!isCancelled) {
           setSession(null);
           setSessionNotice({
@@ -110,11 +110,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!isReady) return;
 
     if (session) {
-      window.sessionStorage.setItem("lotex-auth", JSON.stringify(session));
+      window.sessionStorage.setItem("terrify-auth", JSON.stringify(session));
       return;
     }
 
-    window.sessionStorage.removeItem("lotex-auth");
+    window.sessionStorage.removeItem("terrify-auth");
   }, [isReady, session]);
 
   async function handleRefreshSession() {

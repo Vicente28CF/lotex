@@ -6,6 +6,7 @@ import type {
   ContactRequest,
   ContactRequestPayload,
   CreateTerrenoPayload,
+  Message,
   Terreno,
   TerrenoImageInput,
   UpdateTerrenoPayload,
@@ -30,6 +31,8 @@ type TerrenoListApi = {
   status: "active" | "paused" | "sold";
   is_featured: boolean;
   image: string | null;
+  is_favorited?: boolean;
+  created_at?: string;
 };
 
 type TerrenoDetailApi = {
@@ -47,6 +50,9 @@ type TerrenoDetailApi = {
   status: string;
   is_featured: boolean;
   views_count: number;
+  is_favorited?: boolean;
+  nearby_services?: string[];
+  terrain_type?: string;
   images: Array<{
     id: string;
     image_url: string;
@@ -88,10 +94,22 @@ type ContactRequestApi = {
   notification_sent_at: string | null;
   notification_error: string;
   created_at: string;
+  messages: MessageApi[];
+  last_message: { body: string; created_at: string } | null;
+};
+
+type MessageApi = {
+  id: string;
+  sender_role: "buyer" | "seller";
+  sender_name: string;
+  body: string;
+  is_flagged: boolean;
+  created_at: string;
+  is_mine: boolean;
 };
 
 type LoginResponse = {
-  user: AuthUser;
+  user: AuthUserApi;
   tokens: {
     access: string;
     refresh: string;
@@ -218,8 +236,9 @@ function mapTerrenoList(item: TerrenoListApi): Terreno {
     latitude: null,
     longitude: null,
     owner: null,
-    createdAt: null,
+    createdAt: item.created_at ?? null,
     updatedAt: null,
+    isFavorited: item.is_favorited ?? false,
   };
 }
 
@@ -258,6 +277,22 @@ function mapTerrenoDetail(item: TerrenoDetailApi): Terreno {
     },
     createdAt: item.created_at,
     updatedAt: item.updated_at,
+    nearbyServices: item.nearby_services ?? [],
+    terrainType: item.terrain_type,
+  };
+}
+
+// ─── Mapeo de mensajes ──────────────────────────────────────────────────────
+
+function mapMessage(item: MessageApi): Message {
+  return {
+    id: item.id,
+    senderRole: item.sender_role,
+    senderName: item.sender_name,
+    body: item.body,
+    isFlagged: item.is_flagged,
+    createdAt: item.created_at,
+    isMine: item.is_mine,
   };
 }
 
@@ -274,6 +309,10 @@ function mapContactRequest(item: ContactRequestApi): ContactRequest {
     notificationSentAt: item.notification_sent_at,
     notificationError: item.notification_error,
     createdAt: item.created_at,
+    messages: item.messages?.map(mapMessage) ?? [],
+    lastMessage: item.last_message
+      ? { body: item.last_message.body, createdAt: item.last_message.created_at }
+      : null,
   };
 }
 
@@ -403,7 +442,56 @@ export async function loginUser(credentials: {
   return {
     accessToken: data.tokens.access,
     refreshToken: data.tokens.refresh,
-    user: data.user,
+    user: mapAuthUser(data.user),
+  };
+}
+
+export async function registerUser(data: {
+  email: string;
+  password: string;
+  fullName: string;
+}): Promise<{ message: string; email: string }> {
+  const response = await requestJson<{ message: string; email: string }>(
+    "/auth/register/",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: data.email,
+        password: data.password,
+        full_name: data.fullName,
+      }),
+    },
+    {
+      fallbackMessage: "No se pudo crear la cuenta.",
+      preferredErrorKeys: ["email", "password", "full_name", "non_field_errors"],
+    },
+  );
+
+  return response;
+}
+
+export async function loginWithGoogle(credential: string): Promise<AuthSession> {
+  const data = await requestJson<LoginResponse>(
+    "/auth/google/",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ credential }),
+    },
+    {
+      fallbackMessage: "No se pudo iniciar sesion con Google.",
+    },
+  );
+
+  return {
+    accessToken: data.tokens.access,
+    refreshToken: data.tokens.refresh,
+    user: mapAuthUser(data.user),
   };
 }
 
@@ -509,8 +597,74 @@ async function requestAuthenticatedJson<T>(
   throw new ApiError(fallbackMessage, 500, null);
 }
 
-export async function fetchTerrenos(page = 1) {
-  const path = page > 1 ? `/terrenos/?page=${page}` : "/terrenos/";
+export type TerrenoFilters = {
+  municipio?: string;
+  precio_min?: number;
+  precio_max?: number;
+  min_area?: number;
+  max_area?: number;
+  ordering?: string;
+  is_featured?: boolean;
+  search?: string;
+};
+
+function mapTerrenoOrdering(ordering?: string) {
+  if (!ordering) return undefined;
+  const map: Record<string, string> = {
+    precio_asc: "price",
+    precio_desc: "-price",
+    recientes: "-created_at",
+    area_asc: "area_m2",
+    area_desc: "-area_m2",
+  };
+  return map[ordering] ?? ordering;
+}
+
+export async function fetchTerrenos(page = 1, filters: TerrenoFilters = {}) {
+  const params = new URLSearchParams();
+
+  if (page > 1) {
+    params.set("page", String(page));
+  }
+
+  if (filters.municipio) {
+    params.set("municipio", filters.municipio);
+  }
+
+  if (filters.precio_min !== undefined && filters.precio_min !== null) {
+    params.set("min_price", String(filters.precio_min));
+  }
+
+  if (filters.precio_max !== undefined && filters.precio_max !== null) {
+    params.set("max_price", String(filters.precio_max));
+  }
+
+  if (filters.min_area !== undefined && filters.min_area !== null) {
+    params.set("min_area", String(filters.min_area));
+  }
+
+  if (filters.max_area !== undefined && filters.max_area !== null) {
+    params.set("max_area", String(filters.max_area));
+  }
+
+  const mappedOrdering = mapTerrenoOrdering(filters.ordering);
+  if (mappedOrdering) {
+    params.set("ordering", mappedOrdering);
+  }
+
+  if (filters.is_featured !== undefined && filters.is_featured !== null) {
+    params.set("is_featured", String(filters.is_featured));
+  }
+
+  if (filters.search) {
+    params.set("search", filters.search);
+  }
+
+  const queryString = params.toString();
+  const path = queryString
+    ? `/terrenos/?${queryString}`
+    : (page > 1 ? "/terrenos/" : "/terrenos/");
+
   const response = await requestJson<PaginatedResponse<TerrenoListApi>>(
     path,
     {},
@@ -689,6 +843,8 @@ export async function createTerreno(payload: CreateTerrenoPayload, auth: AuthReq
         latitude: payload.latitude ?? null,
         longitude: payload.longitude ?? null,
         status: payload.status,
+        nearby_services: payload.nearbyServices ?? [],
+        terrain_type: payload.terrainType ?? "",
       }),
     },
     {
@@ -738,6 +894,8 @@ export async function updateTerreno(
         latitude: payload.latitude ?? null,
         longitude: payload.longitude ?? null,
         status: payload.status,
+        nearby_services: payload.nearbyServices ?? [],
+        terrain_type: payload.terrainType ?? "",
       }),
     },
     {
@@ -808,6 +966,26 @@ export async function manageTerrenoImages(
   return mapTerrenoDetail(response);
 }
 
+export async function toggleFavorite(slug: string, isFavorited: boolean, auth: AuthRequestOptions) {
+  await requestAuthenticatedJson(
+    `/terrenos/${slug}/favorite/`,
+    auth,
+    { method: isFavorited ? "DELETE" : "POST" },
+    { fallbackMessage: "No se pudo actualizar el guardado en favoritos." }
+  );
+}
+
+export async function fetchFavorites(auth: AuthRequestOptions) {
+  const response = await requestAuthenticatedJson<PaginatedResponse<TerrenoListApi>>(
+    "/terrenos/favorites/",
+    auth,
+    { method: "GET" },
+    { fallbackMessage: "No se pudieron cargar los favoritos." },
+  );
+
+  return response.results.map(mapTerrenoList);
+}
+
 export async function deleteTerrenoImage(
   slug: string,
   imageId: string,
@@ -854,4 +1032,37 @@ export async function uploadTerrenoImages(
   );
 
   return mapTerrenoDetail(response);
+}
+
+// ─── Mensajes ───────────────────────────────────────────────────────────────
+
+export async function fetchMessages(
+  contactId: string,
+  auth: AuthRequestOptions,
+): Promise<Message[]> {
+  const response = await requestAuthenticatedJson<PaginatedResponse<MessageApi>>(
+    `/contact-requests/${contactId}/messages/`,
+    auth,
+    { method: "GET" },
+    { fallbackMessage: "No se pudieron cargar los mensajes." },
+  );
+  return response.results.map(mapMessage);
+}
+
+export async function sendMessage(
+  contactId: string,
+  body: string,
+  auth: AuthRequestOptions,
+): Promise<Message> {
+  const response = await requestAuthenticatedJson<MessageApi>(
+    `/contact-requests/${contactId}/messages/`,
+    auth,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ body }),
+    },
+    { fallbackMessage: "No se pudo enviar el mensaje." },
+  );
+  return mapMessage(response);
 }

@@ -16,7 +16,7 @@ from .services import TerrainImageServiceError
 TEST_CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-        "LOCATION": "lotex-tests",
+        "LOCATION": "terrify-tests",
     }
 }
 
@@ -27,12 +27,12 @@ class TerrenoApiTests(APITestCase):
         self.owner = User.objects.create_user(
             email="owner@test.com",
             full_name="Owner User",
-            password="LoteXPassSegura28",
+            password="TerrifyPassSegura28",
         )
         self.other_user = User.objects.create_user(
             email="other@test.com",
             full_name="Other User",
-            password="LoteXPassSegura28",
+            password="TerrifyPassSegura28",
         )
         self.active_terreno = Terreno.objects.create(
             user=self.owner,
@@ -100,7 +100,7 @@ class TerrenoApiTests(APITestCase):
         limited_user = User.objects.create_user(
             email="limited@test.com",
             full_name="Limited User",
-            password="LoteXPassSegura28",
+            password="TerrifyPassSegura28",
         )
         for index in range(3):
             Terreno.objects.create(

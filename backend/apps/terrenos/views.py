@@ -76,7 +76,7 @@ class TerrenoViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in ("list", "retrieve"):
             permission_classes = [permissions.AllowAny]
-        elif self.action == "mine":
+        elif self.action in ("mine", "favorite", "favorites"):
             permission_classes = [permissions.IsAuthenticated]
         else:
             permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
@@ -135,6 +135,40 @@ class TerrenoViewSet(viewsets.ModelViewSet):
             serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(serializer.data)
         serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["post", "delete"], permission_classes=[permissions.IsAuthenticated], url_path="favorite")
+    def favorite(self, request, slug=None):
+        terreno = self.get_object()
+        from .models import Favorite
+        
+        if request.method == "POST":
+            Favorite.objects.get_or_create(user=request.user, terreno=terreno)
+            return Response({"status": "favorited"}, status=status.HTTP_201_CREATED)
+            
+        elif request.method == "DELETE":
+            deleted, _ = Favorite.objects.filter(user=request.user, terreno=terreno).delete()
+            if deleted:
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response({"detail": "Favorito no encontrado."}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=False, methods=["get"], permission_classes=[permissions.IsAuthenticated], url_path="favorites")
+    def favorites(self, request):
+        from .models import Favorite
+        favorites_qs = Favorite.objects.filter(user=request.user).select_related("terreno")
+        
+        # Obtenemos la lista de los IDs de los terrenos favoritos en orden
+        favorite_terreno_ids = list(favorites_qs.values_list('terreno_id', flat=True))
+        
+        # Generamos el queryset base pero filtrando en los permitidos
+        queryset = self.get_queryset().filter(id__in=favorite_terreno_ids)
+        
+        # Para forzar el orden de 'favorites_qs' podríamos hacerlo, pero el queryset default está bien
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = TerrenoListSerializer(page, many=True, context=self.get_serializer_context())
+            return self.get_paginated_response(serializer.data)
+        serializer = TerrenoListSerializer(queryset, many=True, context=self.get_serializer_context())
         return Response(serializer.data)
 
     @action(detail=True, methods=["put"], permission_classes=[permissions.IsAuthenticated], url_path="images")
@@ -214,7 +248,7 @@ class TerrenoViewSet(viewsets.ModelViewSet):
                 self._validate_image_file(file)
                 upload_result = upload_terrain_image(
                     file=file,
-                    folder=f"lotex/terrenos/{terreno.slug}",
+                    folder=f"terrify/terrenos/{terreno.slug}",
                 )
                 uploaded_cloudinary_ids.append(upload_result["public_id"])
                 TerrenoImage.objects.create(
