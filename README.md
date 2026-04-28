@@ -1,91 +1,132 @@
 <div align="center">
   <h1>🌱 Terrify</h1>
-  <p><strong>El marketplace de terrenos moderno y local</strong></p>
+  <p><strong>Marketplace de terrenos moderno con arquitectura escalable</strong></p>
 
   <p>
-    <img src="https://img.shields.io/badge/Next.js-14-black.svg?style=flat&logo=next.js" alt="Next.js" />
-    <img src="https://img.shields.io/badge/React-18-blue.svg?style=flat&logo=react" alt="React" />
-    <img src="https://img.shields.io/badge/Django-4.2-0C4B33.svg?style=flat&logo=django" alt="Django" />
-    <img src="https://img.shields.io/badge/PostgreSQL-16-336791.svg?style=flat&logo=postgresql" alt="PostgreSQL" />
-    <img src="https://img.shields.io/badge/TypeScript-5.x-3178C6.svg?style=flat&logo=typescript" alt="TypeScript" />
+    <img src="https://img.shields.io/badge/Next.js-14-black?style=flat&logo=next.js" alt="Next.js" />
+    <img src="https://img.shields.io/badge/React-18-blue?style=flat&logo=react" alt="React" />
+    <img src="https://img.shields.io/badge/Django-4.2-0C4B33?style=flat&logo=django" alt="Django" />
+    <img src="https://img.shields.io/badge/PostgreSQL-16-336791?style=flat&logo=postgresql" alt="PostgreSQL" />
+    <img src="https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat&logo=typescript" alt="TypeScript" />
+    <img src="https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker" alt="Docker" />
+    <img src="https://img.shields.io/badge/License-MIT-green?style=flat" alt="License" />
   </p>
+
+  <!-- Screenshots -->
+  <img src="docs/home.png" alt="Home" width="400"/>
+  <img src="docs/terrenos.png" alt="Terrenos" width="400"/>
+  <img src="docs/login.png" alt="Login" width="400"/>
 </div>
-
-<br />
-
-**Terrify** es un marketplace de terrenos orientado a la experiencia del usuario y transacciones sin fricción. Pensado para iniciar operativamente en Zacoalco de Torres, Jalisco, con una arquitectura escalable para habilitar un mercado regional y posteriormente global.
-
-Nuestra filosofía de producto es sencilla: **Exploración pública sin barreras.** El usuario solo necesita registrarse cuando va a ejecutar una acción que aporta valor (publicar un terreno o contactar a un vendedor).
 
 ---
 
-## 🎨 Características principales
+## 📋 Índice
 
-- 🚀 **Navegación Sin Fricción**: Exploración y lectura de perfiles de terrenos de manera inmediata sin solicitar registro.
-- 📱 **Mobile First**: Diseño adaptativo con componentes optimizados para smartphones orientados a navegación vertical tipo app.
-- 🔒 **Contacto Mediado**: Solicitudes de contacto encriptadas y moderadas. El vendedor no expone su información públicamente; recibe los contactos desde su panel o vía correo electrónico.
-- ⚡ **Performance (SSR + ISR)**: Renderizado optimizado con Next.js App Router para una carga instantánea y beneficios supremos en SEO.
-- 🛡️ **Seguridad por diseño**: API protegida, autenticación robusta mediante tokens expensivos JWT, rotación y *Throttling* para evitar abusos.
+1. [Acerca del Proyecto](#-acerca-del-proyecto)
+2. [Características Principales](#-características-principales)
+3. [Stack Tecnológico](#-stack-tecnológico)
+4. [Arquitectura](#-arquitectura)
+5. [Primeros Pasos](#-primeros-pasos)
+6. [Roadmap](#-roadmap)
+7. [Contribuir](#-contribuir)
+8. [Licencia](#-licencia)
+
+---
+
+## 📌 Acerca del Proyecto
+
+**Terrify** es un marketplace de terrenos orientado a la experiencia del usuario y transacciones sin fricción. Diseñado para iniciar operativamente en Zacoalco de Torres, Jalisco, con una arquitectura escalable para habilitar un mercado regional y posteriormente global.
+
+### Nuestra Filosofía
+> **Exploración pública sin barreras.** El usuario solo necesita registrarse cuando va a ejecutar una acción que aporta valor: publicar un terreno o contactar a un vendedor.
+
+### Público Objetivo
+- **Vendedores**: Propietarios de terrenos que desean publicar de forma segura
+- **Compradores**: Personas buscando terrenos en la región
+- **Agentes**: Profesionales inmobiliarios que gestionan múltiples propiedades
+
+---
+
+## 🎨 Características Principales
+
+| Característica | Descripción |
+|-----------------|-------------|
+| **Navegación Sin Fricción** | Exploración inmediata sin registro obligatorio |
+| **Mobile First** | Diseño adaptativo optimizado para smartphones |
+| **Contacto Mediado** | Solicitudes encriptadas y moderadas via panel o email |
+| **SSR + ISR** | Renderizado optimizado para SEO y velocidad |
+| **Seguridad JWT** | Tokens con rotación, blacklist y rate limiting |
 
 ---
 
 ## 🛠️ Stack Tecnológico
 
-El proyecto está diseñado sobre un **Monorepo** que divide claramente la lógica de negocio y presentación frontal.
+### Frontend
+```
+Next.js 14 (App Router)  →  React 18  →  TypeScript  →  TailwindCSS
+```
 
-### 🌐 Frontend
-- **Framework:** Next.js 14 (App Router)
-- **UI & Estilos:** React 18, TailwindCSS, CSS Variables (Preferencia Reducción de movimiento)
-- **Lenguaje:** TypeScript
+### Backend
+```
+Django 4.2 + DRF  →  PostgreSQL  →  Redis  →  SimpleJWT
+```
 
-### ⚙️ Backend
-- **Framework:** Django 4.2 + Django REST Framework (DRF)
-- **Base de Datos:** PostgreSQL
-- **Cache & Colas:** Redis (Throttling y manejo de sesiones)
-- **Autenticación:** SimpleJWT (Access/Refresh Tokens) con Blacklist
-
-### ☁️ Infraestructura & Proveedores
-- **Imágenes:** Cloudinary (Manipulación y almacenamiento cloud)
-- **Correos:** Resend (Notificaciones transaccionales)
-- **Contenedores:** Docker & Docker Compose
-- **Despliegues (CI/CD):** GitHub Actions -> Vercel (Front) + Render (Back)
+### Infraestructura
+```
+Docker & Compose  →  Cloudinary (imágenes)  →  Resend (emails)
+Vercel (frontend)  →  Render (backend)
+```
 
 ---
 
-## 🏗️ Arquitectura de Software
+## 🏗️ Arquitectura
 
-La base fue construida manteniendo separación crítica de responsabilidades (SoC):
-1. El **frontend interactúa unicamente** mediante una API REST protegida y no tiene conocimiento del acceso físico de la base de datos.
-2. El **backend gestiona todas las reglas de negocio**, controlando autenticación, Rate Limiting y validación de propiedades espaciales del terreno.
-3. Se integran políticas de seguridad agresivas para Cross-Origin (CORS), Content Security Policy (CSP) y JWT.
+```
+┌─────────────┐     REST API      ┌─────────────┐
+│   Frontend  │  ←─────────────→  │   Backend   │
+│  (Next.js)  │   (protected)    │  (Django)   │
+└─────────────┘                   └──────┬──────┘
+                                         │
+                                  ┌──────┴──────┐
+                                  │  PostgreSQL │
+                                  │    Redis    │
+                                  └─────────────┘
+```
+
+**Principios de diseño:**
+- Separación estricta de responsabilidades (SoC)
+- API REST protegida sin acceso directo a BD
+- Rate limiting y JWT con blacklist
+- Políticas CORS/CSP agresivas
 
 ---
 
-## 💻 Entorno de Desarrollo Local
-
-El proyecto está listo para correr localmente mediante contenedores garantizando paridad en el equipo de desarrollo. 
+## 💻 Primeros Pasos
 
 ### Prerrequisitos
-- Node.js (v18+)
+- Node.js v18+
 - Docker y Docker Compose
-- Python 3.10+ (si desarrollas backend sin contenedor)
+- Python 3.10+ (opcional)
 
-### Backend (Dockerizado)
-
-El backend expone su API en `localhost:8000/api`.
+### Instalación
 
 ```bash
-# Iniciar servicios de backend y BD
+# Clonar el repositorio
+git clone https://github.com/tu-usuario/terrify.git
+cd terrify
+```
+
+### Backend (Docker)
+
+```bash
+# Iniciar servicios
 docker compose up -d db redis backend
 
-# (Opcional) Revisar migraciones o checks
+# Verificar
 docker compose exec backend python manage.py check
 ```
-*(Nota: la URL raíz del backend puede devolver 404 intencionalmente, ya que expone un API REST).*
 
-### Frontend (Local)
-
-El proyecto utiliza dependencias del paquete standard npm.
+### Frontend
 
 ```bash
 cd frontend
@@ -93,31 +134,43 @@ npm install
 npm run dev
 ```
 
-La app estará disponible en `http://localhost:3000`.
+**Credenciales**: Copia los archivos `.env.example` a `.env` y configura tus variables.
+
+> ⚠️ **Nota**: La raíz del backend devuelve 404 ya que solo expone API REST.
 
 ---
 
-## 🔐 Entorno Demo
+## 🗺️ Roadmap
 
-Para pruebas operativas al flujo del vendedor e ingresos, el backend levanta datos tipo *seed* preconfigurados en la inicialización (ver scripts del backend). 
-
-**Nota de seguridad**: Las variables sensibles (`CLOUDINARY_API_KEY`, `RESEND_API_KEY`, passwords locales, etc.) **jamás** deben agregarse al repositorio. Utiliza el archivo `frontend/.env.local` y el `backend/.env` copiando de los `.env.example` proporcionados.
+| Fase | Estado | Descripción |
+|------|--------|-------------|
+| 1 | ✅ | Arquitectura, API y Base de Datos |
+| 2 | ✅ | Autenticación JWT y roles |
+| 3 | ✅ | Listado público SSR |
+| 4 | ✅ | Gestión de terrenos (CRUD) |
+| 5 | ✅ | Dashboard de leads |
+| 6 | ✅ | Cloudinary + Resend |
+| 7 | 🔄 | Pruebas unitarias |
+| 8 | ⏳ | CI/CD con GitHub Actions |
+| 9 | ⏳ | Deploy multi-entorno |
 
 ---
 
-## 🗺️ Roadmap Actual
+## 🤝 Contribuir
 
-El proyecto superó las fases de arquitectura, mocks y conectividad básica de la API. Nos encontramos operando integraciones reales (Cloudinary/Resend).
+1. Fork el proyecto
+2. Crea una rama (`git checkout -b feature/nueva-caracteristica`)
+3. Commit tus cambios (`git commit -m 'Add: nueva característica'`)
+4. Push a la rama (`git push origin feature/nueva-caracteristica`)
+5. Abre un Pull Request
 
-- [x] Desarrollo base Backend API & Base de Datos.
-- [x] Autenticación JWT y roles de usuario.
-- [x] Conexión Pública de Listado + Detalle (Next.js SSR).
-- [x] Gestión privada (CRUD de terrenos, Carga de Imágenes a Cloudinary).
-- [x] Dashboard de leads (Recepción de mensajes, gestión de pipeline, email notification).
-- [x] Optimización UX y Rendimiento SSR/SEO.
-- [ ] Pruebas unitarias extendidas a endpoints de contactos (Backend).
-- [ ] Implementar pipelines de GitHub Actions automatizadas.
-- [ ] Deploy nativo Multi-Entorno (Staging / Producción).
+Para questions, abre un issue.
+
+---
+
+## 📄 Licencia
+
+Este proyecto está bajo la licencia [MIT](LICENSE).
 
 ---
 

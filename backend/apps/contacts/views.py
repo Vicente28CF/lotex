@@ -127,6 +127,47 @@ class ContactRequestViewSet(
         instance.refresh_from_db()
         return Response(ContactRequestListSerializer(instance, context=self.get_serializer_context()).data)
 
+    @action(detail=False, methods=["get"], permission_classes=[permissions.IsAuthenticated], url_path="mine")
+    def mine(self, request):
+        """Lista todas las solicitudes de contacto donde el usuario es comprador o vendedor."""
+        user = request.user
+        queryset = (
+            ContactRequest.objects.select_related("terreno", "buyer", "terreno__user")
+            .prefetch_related("messages")
+            .filter(Q(buyer=user) | Q(terreno__user=user))
+            .order_by("-updated_at")
+        )
+
+        status_filter = request.query_params.get("status")
+        if status_filter in {
+            ContactRequest.Status.PENDING,
+            ContactRequest.Status.READ,
+            ContactRequest.Status.REPLIED,
+        }:
+            queryset = queryset.filter(status=status_filter)
+
+        search = request.query_params.get("search")
+        if search:
+            queryset = queryset.filter(
+                Q(terreno__title__icontains=search)
+                | Q(buyer_name__icontains=search)
+                | Q(buyer_email__icontains=search)
+                | Q(buyer_phone__icontains=search)
+            )
+
+        serializer = ContactRequestListSerializer(queryset, many=True, context=self.get_serializer_context())
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["get"], permission_classes=[permissions.IsAuthenticated], url_path="unread-count")
+    def unread_count(self, request):
+        """Cuenta solicitudes con status 'pending' o 'replied' donde el usuario participa."""
+        user = request.user
+        count = ContactRequest.objects.filter(
+            Q(buyer=user) | Q(terreno__user=user),
+            status__in=[ContactRequest.Status.PENDING, ContactRequest.Status.REPLIED],
+        ).count()
+        return Response({"count": count})
+
 
 class MessageViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins.ListModelMixin):
     permission_classes = [permissions.IsAuthenticated]

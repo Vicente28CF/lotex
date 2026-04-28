@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
 import {
@@ -25,6 +26,7 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
   const [session, setSession] = useState<AuthSession | null>(null);
   const [isReady, setIsReady] = useState(false);
   const [isRestoring, setIsRestoring] = useState(true);
@@ -164,6 +166,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (currentSession) {
       void logoutAuthSession(currentSession);
     }
+    // Redirigir inmediatamente a login por seguridad
+    router.push("/login");
   }
 
   const auth = useMemo(
