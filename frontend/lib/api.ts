@@ -758,6 +758,19 @@ export async function fetchUnreadConversationsCount(auth: AuthRequestOptions): P
   return response.count;
 }
 
+export async function markConversationAsRead(
+  auth: AuthRequestOptions,
+  contactId: string,
+): Promise<ContactRequest> {
+  const response = await requestAuthenticatedJson<ContactRequestApi>(
+    `/contact-requests/${contactId}/mark-read/`,
+    auth,
+    { method: "POST" },
+    { fallbackMessage: "No se pudo marcar como leído." },
+  );
+  return mapContactRequest(response);
+}
+
 export async function fetchReceivedContactsWithFilters(
   auth: AuthRequestOptions,
   filters: ContactFilters = {},

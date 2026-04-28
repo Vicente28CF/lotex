@@ -135,7 +135,7 @@ class ContactRequestViewSet(
             ContactRequest.objects.select_related("terreno", "buyer", "terreno__user")
             .prefetch_related("messages")
             .filter(Q(buyer=user) | Q(terreno__user=user))
-            .order_by("-updated_at")
+            .order_by("-created_at")
         )
 
         status_filter = request.query_params.get("status")
@@ -167,6 +167,15 @@ class ContactRequestViewSet(
             status__in=[ContactRequest.Status.PENDING, ContactRequest.Status.REPLIED],
         ).count()
         return Response({"count": count})
+
+    @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated], url_path="mark-read")
+    def mark_read(self, request, pk=None):
+        """Marca una solicitud de contacto como leída."""
+        contact = self.get_object()
+        if contact.status in [ContactRequest.Status.PENDING, ContactRequest.Status.REPLIED]:
+            contact.status = ContactRequest.Status.READ
+            contact.save(update_fields=["status"])
+        return Response(ContactRequestListSerializer(contact, context=self.get_serializer_context()).data)
 
 
 class MessageViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins.ListModelMixin):
@@ -201,10 +210,11 @@ class MessageViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins.Li
         serializer.is_valid(raise_exception=True)
         message = serializer.save()
 
-        # Marcar contacto como respondido si es el vendedor
         if message.sender_role == Message.SenderRole.SELLER:
             contact.status = ContactRequest.Status.REPLIED
-            contact.save(update_fields=["status"])
+        elif message.sender_role == Message.SenderRole.BUYER:
+            contact.status = ContactRequest.Status.PENDING
+        contact.save(update_fields=["status"])
 
         # Notificar al otro por email
         try:

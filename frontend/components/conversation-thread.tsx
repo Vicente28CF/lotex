@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/components/auth-provider";
-import { fetchMessages, sendMessage } from "@/lib/api";
+import { fetchMessages, sendMessage, markConversationAsRead } from "@/lib/api";
 import type { Message } from "@/lib/types";
 
 export function ConversationThread({ contactId }: { contactId: string }) {
@@ -12,6 +12,16 @@ export function ConversationThread({ contactId }: { contactId: string }) {
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  // Marcar como leído al montar
+  useEffect(() => {
+    if (!auth) return;
+    markConversationAsRead(auth, contactId)
+      .then(() => {
+        window.dispatchEvent(new Event("messages-read"));
+      })
+      .catch(() => {});
+  }, [contactId, auth]);
 
   // Cargar mensajes al montar
   useEffect(() => {
