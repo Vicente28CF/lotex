@@ -168,6 +168,15 @@ class ContactRequestViewSet(
         ).count()
         return Response({"count": count})
 
+    @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated], url_path="mark-read")
+    def mark_read(self, request, pk=None):
+        """Marca una solicitud de contacto como leída."""
+        contact = self.get_object()
+        if contact.status == ContactRequest.Status.PENDING:
+            contact.status = ContactRequest.Status.READ
+            contact.save(update_fields=["status"])
+        return Response(ContactRequestListSerializer(contact, context=self.get_serializer_context()).data)
+
 
 class MessageViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins.ListModelMixin):
     permission_classes = [permissions.IsAuthenticated]

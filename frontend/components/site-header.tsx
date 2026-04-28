@@ -25,9 +25,10 @@ export function SiteHeader() {
       setUnreadCount(0);
       return;
     }
+    const currentAuth = auth;
     async function poll() {
       try {
-        const count = await fetchUnreadConversationsCount(auth);
+        const count = await fetchUnreadConversationsCount(currentAuth);
         setUnreadCount(count);
       } catch {
         // Ignorar errores silenciosamente
@@ -36,6 +37,16 @@ export function SiteHeader() {
     poll();
     const interval = setInterval(poll, 10000);
     return () => clearInterval(interval);
+  }, [auth]);
+
+  // Actualizar conteo cuando se lee un mensaje
+  useEffect(() => {
+    function onMessagesRead() {
+      if (!auth) return;
+      void fetchUnreadConversationsCount(auth).then(setUnreadCount);
+    }
+    window.addEventListener("messages-read", onMessagesRead);
+    return () => window.removeEventListener("messages-read", onMessagesRead);
   }, [auth]);
 
   useEffect(() => {
