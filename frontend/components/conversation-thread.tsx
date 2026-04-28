@@ -27,7 +27,10 @@ export function ConversationThread({ contactId }: { contactId: string }) {
   useEffect(() => {
     if (!auth) return;
     fetchMessages(contactId, auth)
-      .then(setMessages)
+      .then((msgs) => {
+        const unique = Array.from(new Map(msgs.map((m) => [m.id, m])).values());
+        setMessages(unique);
+      })
       .catch(() => setError("No se pudieron cargar los mensajes."));
   }, [contactId, auth]);
 
@@ -38,9 +41,10 @@ export function ConversationThread({ contactId }: { contactId: string }) {
       fetchMessages(contactId, auth)
         .then((newMessages) => {
           setMessages((prev) => {
-            const merged = new Map(prev.map((m) => [m.id, m]));
-            newMessages.forEach((m) => merged.set(m.id, m));
-            return Array.from(merged.values()).sort(
+            const uniquePrev = new Map(prev.map((m) => [m.id, m]));
+            newMessages.forEach((m) => uniquePrev.set(m.id, m));
+            const uniqueMessages = Array.from(uniquePrev.values());
+            return uniqueMessages.sort(
               (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
             );
           });
